@@ -16,6 +16,13 @@ class ProviderStatusAdmin(admin.ModelAdmin):
     list_display = ('provider', 'state', 'used_percent', 'last_success_at', 'last_attempt_at')
     readonly_fields = [field.name for field in ProviderStatus._meta.fields]
 
+    def has_add_permission(self, request):
+        # Both providers exist from the first migration.
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 @admin.register(UsageLog)
 class UsageLogAdmin(admin.ModelAdmin):
     list_display = ('provider', 'quota_label', 'used_percent', 'observed_at')

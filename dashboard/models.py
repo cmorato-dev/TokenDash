@@ -43,6 +43,8 @@ class ProviderStatus(models.Model):
 
     class Meta:
         ordering = ['provider']
+        verbose_name = 'estado de un proveedor'
+        verbose_name_plural = 'estado de los proveedores'
         constraints = [models.CheckConstraint(
             condition=models.Q(used_percent__isnull=True) | models.Q(used_percent__gte=0, used_percent__lte=100),
             name='status_percent_range',
@@ -66,6 +68,8 @@ class UsageLog(models.Model):
 
     class Meta:
         ordering = ['-observed_at']
+        verbose_name = 'lectura'
+        verbose_name_plural = 'histórico de lecturas'
         indexes = [models.Index(fields=['provider', 'quota_key', 'observed_at'])]
         constraints = [models.CheckConstraint(
             condition=models.Q(used_percent__gte=0, used_percent__lte=100), name='usage_percent_range',
