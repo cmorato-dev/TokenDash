@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from django.conf import settings
+from django.utils.translation import gettext as _, gettext_noop
 
 from .quotas import ScrapeFailure
 
@@ -34,7 +35,7 @@ _module = None
 
 class ClientUnavailable(ScrapeFailure):
     state = 'unavailable'
-    message = 'El servidor no ha podido consultar la cuota de Claude. Se conserva la última lectura.'
+    message = gettext_noop('The server could not read the Claude quota. The last reading is kept.')
 
 
 def helper():
@@ -93,52 +94,53 @@ def auth_state(executable, timeout=45):
 
 
 def explain_missing_quota(executable=None, subscription_type=None):
-    """A specific reason why the client published no quota windows."""
+    """A specific reason why the client published no quota windows (in English, translated when shown)."""
     client = executable or find_executable(settings.CLAUDE_CLIENT_PATH or None)
     method = auth_state(client) if client else None
     if method == 'claude.ai':
-        return ('Claude Code está conectado a tu cuenta de claude.ai, pero no publica cuotas de '
-                'suscripción. Puede que tu plan no las exponga.')
+        return gettext_noop('Claude Code is connected to your claude.ai account, but it publishes no '
+                            'subscription quotas. Your plan may not expose them.')
     if method == 'oauth_token':
-        return ('El servidor usa un token de "claude setup-token", que Anthropic limita a las '
-                'peticiones al modelo y no permite consultar la cuota. Inicia sesión con '
-                '"claude auth login" en el servidor y quita CLAUDE_CODE_OAUTH_TOKEN del .env.')
+        return gettext_noop('The server uses a token from "claude setup-token", which Anthropic limits to '
+                            'model requests and which cannot read the quota. Sign in with '
+                            '"claude auth login" on the server and remove CLAUDE_CODE_OAUTH_TOKEN from the .env.')
     if method in ('api_key', 'api_key_helper', 'third_party'):
-        return ('El servidor está autenticado con una clave de API. Ese tipo de credencial no '
-                'publica cuotas de suscripción; hace falta una sesión de claude.ai.')
+        return gettext_noop('The server is signed in with an API key. That kind of credential publishes '
+                            'no subscription quotas; a claude.ai session is needed.')
     if method == 'none':
-        return ('El servidor no tiene ninguna sesión iniciada. Ejecuta "claude auth login" en el '
-                'servidor para conectar la cuenta de claude.ai.')
+        return gettext_noop('The server is not signed in. Run "claude auth login" on the '
+                            'server to connect the claude.ai account.')
     if subscription_type:
-        return ('Claude Code no publicó cuotas de suscripción para la cuenta conectada.')
-    return ('Claude Code no publicó cuotas de suscripción: la cuenta no está conectada con una '
-            'suscripción de claude.ai.')
+        return gettext_noop('Claude Code published no subscription quotas for the connected account.')
+    return gettext_noop('Claude Code published no subscription quotas: the account is not connected to a '
+                        'claude.ai subscription.')
 
 
 # How each sign-in method is described in the admin panel. Only the kind of
 # credential is shown: never a token, an email or an organization.
 AUTH_METHODS = {
-    'claude.ai': ('Sesión de claude.ai conectada', True),
-    'oauth_token': ('Token de "claude setup-token" (no puede leer la cuota)', False),
-    'api_key': ('Clave de API (no publica cuotas)', False),
-    'api_key_helper': ('Clave de API (no publica cuotas)', False),
-    'third_party': ('Credencial de un tercero (no publica cuotas)', False),
-    'none': ('Sin sesión iniciada', False),
+    'claude.ai': (gettext_noop('claude.ai session connected'), True),
+    'oauth_token': (gettext_noop('Token from "claude setup-token" (cannot read the quota)'), False),
+    'api_key': (gettext_noop('API key (publishes no quotas)'), False),
+    'api_key_helper': (gettext_noop('API key (publishes no quotas)'), False),
+    'third_party': (gettext_noop('Third-party credential (publishes no quotas)'), False),
+    'none': (gettext_noop('Not signed in'), False),
     # The two states in which the client could not answer at all.
-    'unavailable': ('El cliente oficial de Claude Code no está instalado en el servidor.', False),
-    'unknown': ('No se ha podido comprobar el inicio de sesión del cliente en el servidor.', False),
+    'unavailable': (gettext_noop('The official Claude Code client is not installed on the server.'), False),
+    'unknown': (gettext_noop("The client's sign-in could not be checked on the server."), False),
 }
 
 # The console commands the operator may need. They act on the worker, which
 # is the container that holds the client's session.
 LOGIN_COMMAND = 'docker compose exec worker claude auth login'
 STATUS_COMMAND = 'docker compose exec worker claude auth status'
-CHECK_COMMAND = 'docker compose exec worker python manage.py claude_estado'
+CHECK_COMMAND = 'docker compose exec worker python manage.py claude_status'
 
 
 def describe_session(method):
-    """Label and whether a credential can read the quota, for a known method."""
-    return AUTH_METHODS.get(method, ('Método de acceso desconocido', False))
+    """Label, in the active language, and whether a credential can read the quota."""
+    label, connected = AUTH_METHODS.get(method, (gettext_noop('Unknown sign-in method'), False))
+    return _(label), connected
 
 
 def current_auth_method():
@@ -177,17 +179,18 @@ def read_limits(executable=None, timeout=None):
     """
     client = find_executable(executable or settings.CLAUDE_CLIENT_PATH or None)
     if client is None:
-        raise ClientUnavailable('El cliente oficial de Claude Code no está instalado en el servidor.')
+        raise ClientUnavailable(gettext_noop('The official Claude Code client is not installed on the server.'))
     try:
         result = helper().probe(client, timeout=timeout or settings.CLAUDE_CLIENT_TIMEOUT)
     except Exception as error:
         # Never log the client's output, its errors or its configuration.
         raise ClientUnavailable() from error
     if not result.get('ok'):
-        raise ClientUnavailable(f'El cliente oficial de Claude Code no respondió a la consulta de uso (etapa {result.get("stage")}).')
+        logger.warning('The Claude Code client did not answer the usage request: stage=%s', result.get('stage'))
+        raise ClientUnavailable(gettext_noop('The official Claude Code client did not answer the usage request.'))
     if not result.get('available'):
         raise ClientUnavailable(explain_missing_quota(client, result.get('subscription_type')))
     windows = result.get('windows') or {}
     if not windows:
-        raise ClientUnavailable('Claude Code respondió sin ventanas de cuota utilizables.')
+        raise ClientUnavailable(gettext_noop('Claude Code answered without usable quota windows.'))
     return windows

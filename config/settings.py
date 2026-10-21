@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.getenv('DJANGO_DEBUG', '0') == '1'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '')
 if not SECRET_KEY:
-    raise ImproperlyConfigured('Define DJANGO_SECRET_KEY antes de iniciar Django.')
+    raise ImproperlyConfigured('Set DJANGO_SECRET_KEY before starting Django.')
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 CSRF_TRUSTED_ORIGINS = list(filter(None, os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')))
 INSTALLED_APPS = [
@@ -16,7 +16,8 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'dashboard.accounts.PasswordChangeRequiredMiddleware',
@@ -27,7 +28,8 @@ TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
     'DIRS': [BASE_DIR / 'templates'], 'APP_DIRS': True,
     'OPTIONS': {'context_processors': [
-        'django.template.context_processors.request', 'django.contrib.auth.context_processors.auth',
+        'django.template.context_processors.request', 'django.template.context_processors.i18n',
+        'django.contrib.auth.context_processors.auth',
         'django.contrib.messages.context_processors.messages',
     ]},
 }]
@@ -46,7 +48,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
     {'NAME': 'dashboard.accounts.NotDefaultPasswordValidator'},
 ]
-LANGUAGE_CODE = 'es'
+# Pages live under /en/ and /es/. A visitor without a prefix is sent to the language
+# of their browser; LANGUAGE_CODE is the fallback and the language of console output.
+LANGUAGES = [('en', 'English'), ('es', 'Español')]
+LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'en')
+if LANGUAGE_CODE not in dict(LANGUAGES):
+    raise ImproperlyConfigured('LANGUAGE_CODE must be en or es.')
+LOCALE_PATHS = [BASE_DIR / 'locale']
 TIME_ZONE = os.getenv('TIME_ZONE', 'Europe/Madrid')
 USE_I18N = True
 USE_TZ = True
@@ -57,8 +65,8 @@ STORAGES = {'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'
             'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'}}
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = os.getenv('DJANGO_SECURE_COOKIES', '0') == '1'
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
@@ -71,7 +79,7 @@ if os.getenv('DJANGO_TRUST_PROXY_HEADERS', '0') == '1':
 X_FRAME_OPTIONS = 'DENY'
 SCRAPE_INTERVAL_MINUTES = int(os.getenv('SCRAPE_INTERVAL_MINUTES', '20'))
 if SCRAPE_INTERVAL_MINUTES < 15:
-    raise ImproperlyConfigured('El intervalo mínimo es de 15 minutos.')
+    raise ImproperlyConfigured('The minimum interval is 15 minutes.')
 # The server reads Claude's subscription limits with the official client itself.
 # The client authenticates with the claude.ai session kept in its own configuration directory.
 CLAUDE_CLIENT_PATH = os.getenv('CLAUDE_CLIENT_PATH', '')
@@ -87,7 +95,7 @@ CELERY_BROKER_CONNECTION_TIMEOUT = 3
 CELERY_TASK_SOFT_TIME_LIMIT = 150
 CELERY_TASK_TIME_LIMIT = 180
 CELERY_TIMEZONE = TIME_ZONE
-# Beat only ticks every minute: the refresh interval is chosen in the admin (Ajustes)
+# Beat only ticks every minute: the refresh interval is chosen in the admin (Settings)
 # and refresh_if_due decides whether it is time. SCRAPE_INTERVAL_MINUTES is its first value.
 CELERY_BEAT_SCHEDULE = {'refresh-if-due': {
     'task': 'scraper.tasks.refresh_if_due', 'schedule': 60, 'options': {'expires': 55},

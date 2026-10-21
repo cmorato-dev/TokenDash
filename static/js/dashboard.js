@@ -1,44 +1,55 @@
 const $ = (selector, root = document) => root.querySelector(selector);
-const fmt = new Intl.DateTimeFormat('es-ES', { dateStyle: 'short', timeStyle: 'short', timeZone: document.body.dataset.timezone });
-const percent = value => value === null ? '—' : `${Number(value).toLocaleString('es-ES', { maximumFractionDigits: 1 })}%`;
-const renewDay = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'numeric', timeZone: document.body.dataset.timezone });
-const renewHour = new Intl.DateTimeFormat('es-ES', { hour: 'numeric', minute: '2-digit', hourCycle: 'h23', timeZone: document.body.dataset.timezone });
-// «Llevas un 26% del límite esta semana. Se renueva el 27/10 a las 7:41.»
-const quotaPeriods = { session: 'en esta sesión de 5 horas', weekly: 'esta semana', weekly_all: 'esta semana', weekly_sonnet: 'esta semana con Sonnet', monthly: 'este mes' };
+// Texts come from Django's catalog (/<language>/jsi18n/); without it the page stays in English.
+const _ = window.gettext || (text => text);
+const format = (text, values) => text.replace(/%\((\w+)\)s/g, (match, key) => values[key]);
+const lang = document.documentElement.lang || 'en';
+const timeZone = document.body.dataset.timezone;
+const fmt = new Intl.DateTimeFormat(lang, { dateStyle: 'short', timeStyle: 'short', timeZone });
+const percent = value => value === null ? '—' : `${Number(value).toLocaleString(lang, { maximumFractionDigits: 1 })}%`;
+// The same day format as the server's reset sentences: «Oct 27» in English, «27/10» in Spanish.
+const renewDay = new Intl.DateTimeFormat(lang, { day: 'numeric', month: lang === 'es' ? 'numeric' : 'short', timeZone });
+const renewHour = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone });
+// «You have used 26% of the limit this week. It renews on Oct 27 at 07:41.»
+const quotaPeriods = { session: _('in this 5-hour session'), weekly: _('this week'), weekly_all: _('this week'), weekly_sonnet: _('this week with Sonnet'), monthly: _('this month') };
 function quotaSentence(quota) {
-  const period = quotaPeriods[quota.key] || `en «${quota.label}»`;
+  const period = quotaPeriods[quota.key] || format(_('in “%(label)s”'), { label: quota.label });
+  const used = percent(quota.used_percent);
   // The window restarted after this reading: the value is the last known one, not the current one.
-  if (quota.window_reset) return `Llevabas un ${percent(quota.used_percent)} del límite ${period}. Ya se ha renovado.`;
+  if (quota.window_reset) return format(_('You had used %(percent)s of the limit %(period)s. It has already renewed.'), { percent: used, period });
   const when = new Date(quota.resets_at);
-  const renews = quota.resets_at && !Number.isNaN(when.getTime()) ? ` Se renueva el ${renewDay.format(when)} a las ${renewHour.format(when)}.` : '';
-  return `Llevas un ${percent(quota.used_percent)} del límite ${period}.${renews}`;
+  const renews = quota.resets_at && !Number.isNaN(when.getTime())
+    ? ` ${format(_('It renews on %(day)s at %(time)s.'), { day: renewDay.format(when), time: renewHour.format(when) })}` : '';
+  return `${format(_('You have used %(percent)s of the limit %(period)s.'), { percent: used, period })}${renews}`;
 }
 // More than half of a limit used turns it yellow; more than 80 %, red. A window that has
 // already restarted keeps its old value, so it is not coloured.
 const levelOf = (used, reset) => used === null || used === undefined || reset ? 'ok' : used > 80 ? 'critical' : used > 50 ? 'warning' : 'ok';
-const levelNotes = { warning: 'Has pasado de la mitad del límite.', critical: 'Te queda poco: has pasado del 80 % del límite.' };
+const levelNotes = { warning: _('You are past half of the limit.'), critical: _('Little left: you are past 80% of the limit.') };
 let pending = false;
-// Home Assistant modules carry their read-only key in the URL fragment (#clave=…),
+// Home Assistant modules carry their read-only key in the URL fragment (#key=…),
 // which the browser never sends to the server; the API receives it as a header.
+// #clave=… is the name used by the first, Spanish-only addresses.
 const embedded = 'embed' in document.body.dataset;
-const embedKey = new URLSearchParams(window.location.hash.slice(1)).get('clave');
+const fragment = new URLSearchParams(window.location.hash.slice(1));
+const embedKey = fragment.get('key') || fragment.get('clave');
 const showError = message => { const feedback = $('#feedback'); if (feedback) feedback.textContent = message; };
 async function getJSON(url, options = {}) {
-  if (embedded && !embedKey) throw new Error('Falta la clave: añade #clave=… al final de la dirección del módulo.');
+  if (embedded && !embedKey) throw new Error(_('The key is missing: add #key=… at the end of the module address.'));
+  // The API has a single address for every language: ask for the page's one.
   const auth = embedKey ? { Authorization: `Bearer ${embedKey}` } : {};
   let response;
   try {
-    response = await fetch(url, { ...options, headers: { Accept: 'application/json', ...auth, ...options.headers } });
+    response = await fetch(url, { ...options, headers: { Accept: 'application/json', 'Accept-Language': lang, ...auth, ...options.headers } });
   } catch {
-    throw new Error('No hay conexión con el servidor de TokenDash. Se reintentará en unos segundos.');
+    throw new Error(_('No connection with the TokenDash server. It will be retried in a few seconds.'));
   }
-  if (response.redirected) { window.location.href = response.url; throw new Error('Inicia sesión de nuevo.'); }
+  if (response.redirected) { window.location.href = response.url; throw new Error(_('Sign in again.')); }
   // While the server restarts or stops, the reply is an HTML error page instead of JSON.
   if (!(response.headers.get('content-type') || '').includes('application/json')) {
-    throw new Error(`El servidor de TokenDash no ha respondido bien (error ${response.status}). Puede que se esté reiniciando; se reintentará en unos segundos.`);
+    throw new Error(format(_('The TokenDash server did not answer properly (error %(status)s). It may be restarting; it will be retried in a few seconds.'), { status: response.status }));
   }
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'No se pudo completar la solicitud.');
+  if (!response.ok) throw new Error(data.error || _('The request could not be completed.'));
   return data;
 }
 async function refreshStatus() {
@@ -53,14 +64,14 @@ async function refreshStatus() {
     gauge.style.setProperty('--available', `${provider.available_percent ?? 0}%`);
     if (provider.available_percent !== null) gauge.setAttribute('aria-valuenow', provider.available_percent);
     else gauge.removeAttribute('aria-valuenow');
-    $('.quota-label', card).textContent = provider.quota_label || 'Sin lectura confirmada';
-    $('.state', card).textContent = provider.refreshing ? 'Actualizando…' : provider.state_label;
+    $('.quota-label', card).textContent = provider.quota_label || _('No confirmed reading');
+    $('.state', card).textContent = provider.refreshing ? _('Refreshing…') : provider.state_label;
     $('.state', card).classList.toggle('success', provider.state === 'ok');
-    $('.updated', card).textContent = provider.last_success_at ? fmt.format(new Date(provider.last_success_at)) : 'Nunca';
-    $('.attempt', card).textContent = provider.last_attempt_at ? `Último intento: ${fmt.format(new Date(provider.last_attempt_at))}` : '';
+    $('.updated', card).textContent = provider.last_success_at ? fmt.format(new Date(provider.last_success_at)) : _('Never');
+    $('.attempt', card).textContent = provider.last_attempt_at ? format(_('Last attempt: %(when)s'), { when: fmt.format(new Date(provider.last_attempt_at)) }) : '';
     $('.error', card).textContent = provider.last_error;
     $('.hint', card).textContent = provider.hint || '';
-    const resetText = quota => quota.window_reset ? 'La ventana se ha reiniciado desde esta lectura' : (quota.reset_text || '');
+    const resetText = quota => quota.window_reset ? _('The window has restarted since this reading') : (quota.reset_text || '');
     $('.reset', card).textContent = provider.quotas[0] ? resetText(provider.quotas[0]) : '';
     const level = levelOf(provider.used_percent, provider.quotas[0]?.window_reset);
     card.dataset.level = level;
@@ -93,22 +104,26 @@ async function refreshStatus() {
 const palette = ['#34d399', '#fb923c', '#60a5fa', '#c084fc', '#facc15', '#f472b6'];
 // Fixed colour per provider and window, so a series keeps its colour when another one has no data.
 const seriesColors = { 'chatgpt:session': '#34d399', 'chatgpt:weekly': '#60a5fa', 'claude:session': '#fb923c', 'claude:weekly_all': '#c084fc' };
-const quotaNames = { session: 'sesión / 5 h', weekly: 'semana', weekly_all: 'semana', weekly_sonnet: 'semana · Sonnet', monthly: 'mes' };
+const quotaNames = { session: _('session / 5 h'), weekly: _('week'), weekly_all: _('week'), weekly_sonnet: _('week · Sonnet'), monthly: _('month') };
 // Five-hour windows are drawn solid; weekly and monthly ones dashed, with hollow points.
 const dashFor = quota => quota === 'session' ? null : '9 6';
 // How each period is grouped and how its axis is labelled.
-const granularityNames = { day: 'Media diaria', week: 'Media por semana', month: 'Media por mes', year: 'Media por año' };
+const granularityNames = { day: _('Daily average'), week: _('Weekly average'), month: _('Monthly average'), year: _('Yearly average') };
 function axisLabel(label, granularity) {
   if (granularity === 'year') return label.slice(0, 4);
   if (granularity === 'month') return label.slice(0, 7);
-  if (granularity === 'week') return `sem. ${label.slice(8)}/${label.slice(5, 7)}`;
-  return label.slice(5);
+  if (granularity === 'week') return format(_('wk %(date)s'), { date: shortDay(label) });
+  return shortDay(label);
 }
+// «Oct 27» or «27/10» from an ISO date (the axis has no room for the year), and the long form.
+const atNoon = label => new Date(`${label}T12:00:00Z`);
+const shortDay = label => new Intl.DateTimeFormat(lang, { day: 'numeric', month: lang === 'es' ? 'numeric' : 'short', timeZone: 'UTC' }).format(atNoon(label));
+const longDay = label => new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(atNoon(label));
 function bucketName(label, granularity) {
-  if (granularity === 'day') return `día ${label.slice(8)}/${label.slice(5, 7)}/${label.slice(0, 4)}`;
-  if (granularity === 'week') return `semana del ${label.slice(8)}/${label.slice(5, 7)}/${label.slice(0, 4)}`;
-  if (granularity === 'month') return `mes de ${label.slice(0, 4)}-${label.slice(5, 7)}`;
-  return `año ${label.slice(0, 4)}`;
+  if (granularity === 'day') return longDay(label);
+  if (granularity === 'week') return format(_('week of %(date)s'), { date: longDay(label) });
+  if (granularity === 'month') return new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(atNoon(label));
+  return label.slice(0, 4);
 }
 function svgNode(tag, attrs, text) {
   const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -123,15 +138,15 @@ async function loadHistory() {
   root.replaceChildren(); legend.replaceChildren();
   const granularity = data.granularity || 'day';
   const note = $('#history-note');
-  if (note) note.textContent = `${granularityNames[granularity] || 'Media diaria'} del porcentaje observado por cuota.`;
+  if (note) note.textContent = format(_('%(average)s of the percentage observed per quota.'), { average: granularityNames[granularity] || granularityNames.day });
   if (!data.series.length) {
     const empty = document.createElement('p');
-    empty.className = 'empty'; empty.textContent = 'El histórico aparecerá tras la primera lectura confirmada.';
+    empty.className = 'empty'; empty.textContent = _('The history will appear after the first confirmed reading.');
     root.append(empty); return;
   }
   // Use the real width so labels keep their size on phones.
   const W = Math.max(300, root.clientWidth || 1000);
-  const svg = svgNode('svg', { viewBox: `0 0 ${W} 260`, role: 'img', 'aria-label': 'Media del consumo, de 0 a 100 por ciento' });
+  const svg = svgNode('svg', { viewBox: `0 0 ${W} 260`, role: 'img', 'aria-label': _('Average usage, from 0 to 100 percent') });
   [0, 25, 50, 75, 100].forEach(value => {
     const y = 220 - value * 2;
     svg.append(svgNode('line', { x1: 48, x2: W - 25, y1: y, y2: y, stroke: '#263449', 'stroke-dasharray': '4 6' }));
@@ -179,8 +194,9 @@ document.querySelectorAll('.refresh').forEach(button => button.addEventListener(
 const hasCards = Boolean($('[data-provider]')), periodSelect = $('#history-days');
 const reloadHistory = () => periodSelect ? loadHistory().catch(e => showError(e.message)) : Promise.resolve();
 if (periodSelect) {
-  // A module can open on another period: /ha/grafica/?dias=30#clave=…
-  const days = new URLSearchParams(window.location.search).get('dias');
+  // A module can open on another period: /en/ha/chart/?days=30#key=… (?dias= in the first addresses).
+  const query = new URLSearchParams(window.location.search);
+  const days = query.get('days') || query.get('dias');
   if ([...periodSelect.options].some(option => option.value === days)) periodSelect.value = days;
   periodSelect.addEventListener('change', reloadHistory);
   // Pages left open on a wall screen also pick up the new readings.

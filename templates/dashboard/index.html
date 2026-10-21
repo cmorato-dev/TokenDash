@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 {% block content %}
 <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
-  <div><p class="eyebrow">CONSUMO DE IA</p><h1 class="mt-3 text-4xl font-semibold tracking-tight">El pulso de tus cuentas.</h1>
-  <p class="mt-3 text-slate-400">{% if single %}Límites y cuotas de tu cuenta de {{ providers.0.get_provider_display }}.{% else %}Límites y cuotas de Claude y ChatGPT sincronizados.{% endif %}</p></div>
+  <div><p class="eyebrow">{% translate "AI USAGE" %}</p><h1 class="mt-3 text-4xl font-semibold tracking-tight">{% translate "The pulse of your accounts." %}</h1>
+  <p class="mt-3 text-slate-400">{% if single %}{% blocktranslate with name=providers.0.get_provider_display %}Limits and quotas of your {{ name }} account.{% endblocktranslate %}{% else %}{% translate "Limits and quotas of Claude and ChatGPT, kept in sync." %}{% endif %}</p></div>
 </div>
 <p id="feedback" class="mb-4 text-sm text-amber-300" role="status" aria-live="polite"></p>
 <form hidden>{% csrf_token %}</form>
 
-<h2 class="mb-4 text-xl font-semibold">Límites publicados por los proveedores</h2>
+<h2 class="mb-4 text-xl font-semibold">{% translate "Limits published by the providers" %}</h2>
 {# With a single subscription the card takes the whole row and spreads its limits sideways. #}
 <div class="grid gap-5 {% if not single %}md:grid-cols-2{% endif %}">
 {% for provider in providers %}
@@ -16,6 +16,6 @@
 {% endfor %}
 </div>
 {% include 'dashboard/_history.html' %}
-<p class="mt-5 text-xs leading-6 text-slate-500">El porcentaje representa la cuota publicada por cada proveedor, no un recuento estimado de tokens. Los datos anteriores se conservan si una actualización falla.</p>
+<p class="mt-5 text-xs leading-6 text-slate-500">{% translate "The percentage is the quota published by each provider, not an estimated token count. Earlier data is kept if a refresh fails." %}</p>
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/dashboard.js' %}" defer></script>{% endblock %}
+{% block scripts %}<script src="{% url 'javascript-catalog' %}" defer></script><script src="{% static 'js/dashboard.js' %}" defer></script>{% endblock %}

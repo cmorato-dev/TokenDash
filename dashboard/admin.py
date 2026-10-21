@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.utils import formats, timezone
 from django.urls import reverse
+from django.utils.translation import gettext as _, gettext_lazy
 
 from .models import IntegrationKey, ProviderStatus, RefreshSettings, UsageLog
 from .views import EMBED_MODULES
@@ -56,11 +57,11 @@ class IntegrationKeyAdmin(admin.ModelAdmin):
         a cookie or the session.
         """
         base = request.build_absolute_uri('/').rstrip('/')
-        modules = [(module, f"{base}{reverse('embed', args=[module])}#clave={obj._key}") for module in EMBED_MODULES]
+        modules = [(module, f"{base}{reverse('embed', args=[module])}#key={obj._key}") for module in EMBED_MODULES]
         sensors = [(provider, f"{base}{reverse('ha-sensor', args=[provider])}") for provider in ('chatgpt', 'claude')]
         # The admin already marks this response no-store, so no copy of the key is cached.
         return TemplateResponse(request, 'admin/dashboard/integrationkey/created.html', {
-            **self.admin_site.each_context(request), 'opts': self.opts, 'title': 'Clave creada',
+            **self.admin_site.each_context(request), 'opts': self.opts, 'title': _('Key created'),
             'record': obj, 'key': obj._key, 'modules': modules, 'sensors': sensors,
         })
 
@@ -72,13 +73,13 @@ class RefreshSettingsAdmin(admin.ModelAdmin):
     readonly_fields = ('last_refresh', 'next_refresh')
     radio_fields = {'accounts': admin.VERTICAL}
 
-    @admin.display(description='última actualización automática')
+    @admin.display(description=gettext_lazy('last automatic refresh'))
     def last_refresh(self, obj):
-        return self._when(obj.last_scheduled_at) or 'Todavía ninguna'
+        return self._when(obj.last_scheduled_at) or _('None yet')
 
-    @admin.display(description='próxima actualización automática')
+    @admin.display(description=gettext_lazy('next automatic refresh'))
     def next_refresh(self, obj):
-        return self._when(obj.next_refresh_at) or 'En el próximo minuto'
+        return self._when(obj.next_refresh_at) or _('In the next minute')
 
     @staticmethod
     def _when(moment):

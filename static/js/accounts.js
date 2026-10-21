@@ -1,11 +1,13 @@
 (() => {
+  // Texts come from Django's catalog (/<language>/jsi18n/).
+  const _ = window.gettext || (text => text);
   const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
   const $ = selector => document.querySelector(selector);
   async function post(url, body) {
-    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf, Accept: 'application/json' }, body: body ? JSON.stringify(body) : undefined });
-    if (response.redirected) { location.href = response.url; throw new Error('Vuelve a iniciar sesión en el administrador.'); }
+    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf, Accept: 'application/json', 'Accept-Language': document.documentElement.lang }, body: body ? JSON.stringify(body) : undefined });
+    if (response.redirected) { location.href = response.url; throw new Error(_('Sign in to the administration again.')); }
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'No se pudo completar la acción.');
+    if (!response.ok) throw new Error(result.error || _('The action could not be completed.'));
     return result;
   }
 
@@ -34,7 +36,7 @@
   });
   const disconnect = $('#codex-disconnect');
   if (disconnect) disconnect.addEventListener('click', async () => {
-    if (!confirm('¿Desconectar ChatGPT? Se borrará la credencial guardada en TokenDash.')) return;
+    if (!confirm(_('Disconnect ChatGPT? The credential stored in TokenDash will be deleted.'))) return;
     try { say((await post(card.dataset.url, { action: 'disconnect' })).message); setTimeout(() => location.reload(), 2500); }
     catch (error) { say(error.message); }
   });
@@ -74,7 +76,7 @@
       document.body.append(area); area.select(); document.execCommand('copy'); area.remove();
     }
     const label = button.textContent;
-    button.textContent = 'Copiado';
+    button.textContent = _('Copied');
     setTimeout(() => { button.textContent = label; }, 1500);
   }
   document.querySelectorAll('.copy-command').forEach(button => button.addEventListener('click', () =>
@@ -90,6 +92,6 @@
         .map(line => line.startsWith('\u0000') ? `    ${line.slice(1)}` : line);
       return `${index + 1}. ${lines.join('\n')}`;
     });
-    copy(`Vincular Claude con el servidor TokenDash (una sola vez)\n\n${steps.join('\n\n')}\n\nNo usar «claude setup-token»: no puede leer la cuota.`, guideCopy);
+    copy(`${_('Link Claude with the TokenDash server (only once)')}\n\n${steps.join('\n\n')}\n\n${_('Do not use "claude setup-token": it cannot read the quota.')}`, guideCopy);
   });
 })();

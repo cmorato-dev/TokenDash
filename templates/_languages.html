@@ -1,0 +1,6 @@
+{% load i18n %}{% get_current_language as current_language %}{% get_available_languages as available_languages %}
+{# The choice is remembered in a cookie; the same page opens in the other language. #}
+<form class="language-switch" method="post" action="{% url 'set_language' %}">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% for code, name in available_languages %}<button type="submit" name="language" value="{{ code }}" lang="{{ code }}" title="{{ name }}"{% if code == current_language %} aria-current="true"{% endif %}>{{ code|upper }}</button>{% endfor %}
+</form>

@@ -1,12 +1,12 @@
-/* Tema del administrador de Django: los mismos colores que el dashboard.
+/* Theme of the Django administration: the same colours as the dashboard.
 
-   El dashboard tiene un solo tema (oscuro), así que aquí se fuerza ese mismo
-   tema en todas las páginas del administrador: cabecera, migas de pan, tablas,
-   formularios y botones usan la paleta del panel.
+   The dashboard has a single (dark) theme, so the same theme is forced on every
+   admin page: header, breadcrumbs, tables, forms and buttons use the dashboard's
+   palette.
 
-   Los selectores repiten `html[data-theme=...]` a propósito: las reglas de
-   Django en `dark_mode.css` tienen más especificidad que `:root` y llegarían
-   después, así que hay que empatar con ellas para ganar. */
+   The selectors repeat `html[data-theme=...]` on purpose: Django's rules in
+   `dark_mode.css` are more specific than `:root` and come later, so they have
+   to be matched to win. */
 
 :root,
 html[data-theme="light"],
@@ -14,20 +14,20 @@ html[data-theme="dark"],
 html[data-theme="auto"] {
   color-scheme: dark;
 
-  /* Marca */
+  /* Brand */
   --primary: #34d399;
   --primary-fg: #0b1220;
   --secondary: #111b2c;
   --accent: #34d399;
 
-  /* Texto */
+  /* Text */
   --body-fg: #e2e8f0;
   --body-bg: #020617;
   --body-quiet-color: #94a3b8;
   --body-medium-color: #b4c1d4;
   --body-loud-color: #f1f5f9;
 
-  /* Cabecera y migas de pan */
+  /* Header and breadcrumbs */
   --header-color: #e2e8f0;
   --header-branding-color: #34d399;
   --header-bg: #111b2c;
@@ -36,27 +36,27 @@ html[data-theme="auto"] {
   --breadcrumbs-link-fg: #34d399;
   --breadcrumbs-bg: #0c1423;
 
-  /* Enlaces */
+  /* Links */
   --link-fg: #34d399;
   --link-hover-color: #6ee7b7;
   --link-selected-fg: #34d399;
 
-  /* Bordes */
+  /* Borders */
   --hairline-color: #253044;
   --border-color: #334155;
 
-  /* Errores y avisos */
+  /* Errors and warnings */
   --error-fg: #fcd34d;
   --message-success-bg: #14382f;
   --message-warning-bg: #78350f;
   --message-error-bg: #450a0a;
 
-  /* Superficies */
+  /* Surfaces */
   --darkened-bg: #0c1423;
   --selected-bg: #1c293b;
   --selected-row: #17362e;
 
-  /* Botones */
+  /* Buttons */
   --button-fg: #a7f3d0;
   --button-bg: #17362e;
   --button-hover-bg: #214c3e;
@@ -72,12 +72,12 @@ html[data-theme="auto"] {
   --object-tools-hover-bg: #214c3e;
 }
 
-/* El panel tiene un solo tema: el conmutador de Django no tiene sentido. */
+/* The dashboard has a single theme: Django's switcher makes no sense. */
 .theme-toggle {
   display: none !important;
 }
 
-/* Cabecera */
+/* Header */
 #header {
   border-bottom: 1px solid var(--hairline-color);
 }
@@ -101,12 +101,36 @@ html[data-theme="auto"] {
   border-bottom-color: rgba(52, 211, 153, 0.3);
 }
 
-/* Migas de pan */
+/* EN · ES, as in the dashboard header. */
+#user-tools .language-switch {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+#user-tools .language-switch button {
+  border: 1px solid var(--hairline-color);
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: none;
+  color: var(--header-link-color);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#user-tools .language-switch button[aria-current] {
+  background: #17362e;
+  color: #a7f3d0;
+}
+
+/* Breadcrumbs */
 div.breadcrumbs {
   border-bottom: 1px solid var(--hairline-color);
 }
 
-/* Los módulos son las tarjetas del dashboard */
+/* Modules are the dashboard's cards */
 .module {
   border: 1px solid var(--hairline-color);
   border-radius: 20px;
@@ -127,7 +151,7 @@ div.breadcrumbs {
   font-size: 0.7rem;
 }
 
-/* Formularios: los campos del dashboard */
+/* Forms: the dashboard's fields */
 input:not([type]),
 input[type="text"],
 input[type="password"],
@@ -157,7 +181,7 @@ select:focus,
   outline: none;
 }
 
-/* Botones: el mismo aspecto que las acciones del dashboard */
+/* Buttons: the same look as the dashboard's actions */
 .button,
 input[type="submit"],
 input[type="button"],
@@ -192,7 +216,7 @@ input[type="submit"].default:hover,
   color: #062a20;
 }
 
-/* Etiqueta verde del dashboard */
+/* The dashboard's green badge */
 .eyebrow {
   color: #34d399;
   letter-spacing: 0.2em;
@@ -305,7 +329,7 @@ details.connect-card > summary strong {
   color: #34d399;
 }
 
-/* Comando de consola: se copia pegándolo, así que se lee de un vistazo */
+/* Console command: it is copied and pasted, so it must read at a glance */
 code,
 pre {
   color: #a7f3d0;
@@ -321,7 +345,7 @@ code.command {
   font-family: var(--font-family-monospace);
 }
 
-/* Tarjeta de bienvenida del índice del administrador */
+/* Welcome card of the admin index */
 #welcome-card {
   padding: 28px;
   border: 1px solid #253044;
@@ -356,7 +380,7 @@ code.command {
   color: #d1fae5;
 }
 
-/* Guía para vincular Claude: un paso por línea, cada comando con su botón Copiar */
+/* Guide to link Claude: one step per line, each command with its Copy button */
 details.claude-guide {
   margin: 16px 0;
   padding: 14px 18px;
@@ -397,12 +421,12 @@ details.claude-guide > summary strong {
   overflow-wrap: anywhere;
 }
 
-/* display:flex de .entry anula el atributo hidden: el campo de ChatGPT solo aparece tras «Iniciar sesión» */
+/* .entry's display:flex overrides the hidden attribute: the ChatGPT field only appears after "Sign in" */
 .entry[hidden] {
   display: none;
 }
 
-/* Claves de Home Assistant: direcciones listas para copiar */
+/* Home Assistant keys: addresses ready to copy */
 .ha-copy {
   width: 100%;
   margin-top: 4px;

@@ -8,11 +8,13 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncWeek, TruncYea
 from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _, gettext_lazy
 from django.views import View, csrf
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 
 from .models import IntegrationKey, ProviderStatus, RefreshSettings, UsageLog
+from scraper.quotas import display_quota
 from scraper.tasks import enqueue_refresh
 
 def provider_hint(status):
@@ -23,28 +25,28 @@ def provider_hint(status):
     """
     if status.provider == 'claude':
         if status.collection_mode == 'client':
-            return ('El servidor necesita una sesión de claude.ai para leer la cuota: conéctala desde '
-                    '«Conectar cuentas» o, por consola, con '
-                    '"docker compose exec worker claude auth login".')
-        return ('Conecta Claude en «Conectar cuentas» para que el servidor lea sus límites con el '
-                'cliente oficial de Claude Code.')
+            return _('The server needs a claude.ai session to read the quota: connect it from '
+                     '"Connect accounts" or, on the console, with '
+                     '"docker compose exec worker claude auth login".')
+        return _('Connect Claude in "Connect accounts" so the server reads its limits with the '
+                 'official Claude Code client.')
     if status.provider == 'chatgpt':
         if status.collection_mode == 'api':
             # The credential exists: the limits are read on the next refresh.
-            return 'Pulsa «Actualizar ahora» para leer los límites de Codex.'
-        return 'Conecta ChatGPT en «Conectar cuentas» para leer los límites de Codex.'
+            return _('Press "Refresh now" to read the Codex limits.')
+        return _('Connect ChatGPT in "Connect accounts" to read the Codex limits.')
     return ''
 
-# Windows offered in «Evolución de los límites»: days, label and the granularity
+# Windows offered in «Limits over time»: days, label and the granularity
 # used to group the readings. Long windows are grouped by week, month or year, so
 # the chart never needs one point per day (five years would be more than 1800).
 PERIODS = {
-    7: ('7 días', 'day'),
-    30: ('30 días', 'day'),
-    90: ('3 meses', 'week'),
-    182: ('6 meses', 'week'),
-    365: ('1 año', 'month'),
-    1825: ('5 años', 'year'),
+    7: (gettext_lazy('7 days'), 'day'),
+    30: (gettext_lazy('30 days'), 'day'),
+    90: (gettext_lazy('3 months'), 'week'),
+    182: (gettext_lazy('6 months'), 'week'),
+    365: (gettext_lazy('1 year'), 'month'),
+    1825: (gettext_lazy('5 years'), 'year'),
 }
 TRUNCATIONS = {'day': TruncDay, 'week': TruncWeek, 'month': TruncMonth, 'year': TruncYear}
 
@@ -63,7 +65,7 @@ def serialize_status(status):
     now = timezone.now()
     quotas = []
     for quota in status.quotas:
-        quota = dict(quota)
+        quota = display_quota(quota)
         # The window restarted after this reading: the value is the last known one, not the current one.
         quota['window_reset'] = bool(quota.get('resets_at') and quota['resets_at'] < now.isoformat())
         quotas.append(quota)
@@ -74,11 +76,12 @@ def serialize_status(status):
         'state': status.state, 'state_label': status.get_state_display(),
         'used_percent': float(status.used_percent) if status.used_percent is not None else None,
         'available_percent': float(status.available_percent) if status.available_percent is not None else None,
-        'quota_label': status.quota_label, 'quotas': quotas,
+        'quota_label': quotas[0]['label'] if quotas else '', 'quotas': quotas,
         'can_refresh': refreshable,
         'hint': '' if status.last_success_at or refreshable else provider_hint(status),
         'last_success_at': status.last_success_at, 'last_attempt_at': status.last_attempt_at,
-        'last_error': status.last_error,
+        # Stored in English; an older message in another language is shown as it is.
+        'last_error': _(status.last_error) if status.last_error else '',
         'refreshing': bool(status.refresh_token and status.refresh_expires_at and status.refresh_expires_at > now),
     }
 
@@ -112,7 +115,7 @@ class LoginOrKeyRequiredMixin:
         if request.user.is_authenticated or integration_key(request):
             return super().dispatch(request, *args, **kwargs)
         if 'Authorization' in request.headers:
-            return JsonResponse({'error': 'La clave de Home Assistant no es válida o se ha borrado.'}, status=401)
+            return JsonResponse({'error': _('The Home Assistant key is not valid or has been deleted.')}, status=401)
         return redirect_to_login(request.get_full_path())
 
 
@@ -129,27 +132,27 @@ class RefreshView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def handle_no_permission(self):
         if self.request.user.is_authenticated:
-            return JsonResponse({'error': 'Tu usuario no puede pedir actualizaciones.'}, status=403)
+            return JsonResponse({'error': _('Your user cannot ask for refreshes.')}, status=403)
         return super().handle_no_permission()
 
     def post(self, request, provider):
         status = ProviderStatus.objects.filter(provider=provider, provider__in=RefreshSettings.shown_providers()).first()
         if status is None:
-            return JsonResponse({'error': 'Proveedor desconocido.'}, status=404)
+            return JsonResponse({'error': _('Unknown provider.')}, status=404)
         if status.collection_mode == 'api' and not hasattr(status, 'credential'):
-            return JsonResponse({'error': 'Vuelve a conectar la cuenta en «Conectar cuentas».'}, status=409)
+            return JsonResponse({'error': _('Connect the account again in "Connect accounts".')}, status=409)
         if status.collection_mode == 'client' and not can_refresh(status):
-            return JsonResponse({'error': 'El servidor no tiene el cliente oficial de Claude Code instalado.'}, status=409)
+            return JsonResponse({'error': _('The official Claude Code client is not installed on the server.')}, status=409)
         if status.collection_mode == 'none':
-            return JsonResponse({'error': 'Esta cuenta no tiene una fuente de cuota conectada.'}, status=409)
+            return JsonResponse({'error': _('This account has no quota source connected.')}, status=409)
         # An atomic cooldown also applies to failed runs and concurrent requests.
         if status.last_attempt_at and status.last_attempt_at > timezone.now() - timedelta(seconds=60):
-            return JsonResponse({'error': 'Espera un minuto antes de volver a actualizar.'}, status=429)
+            return JsonResponse({'error': _('Wait a minute before refreshing again.')}, status=429)
         try:
             token = enqueue_refresh(status.pk)
         except Exception:
-            return JsonResponse({'error': 'La cola no está disponible. Revisa Redis y el worker.'}, status=503)
-        return JsonResponse({'queued': bool(token), 'message': 'Actualización encolada.' if token else 'Ya hay una actualización en curso.'}, status=202)
+            return JsonResponse({'error': _('The queue is not available. Check Redis and the worker.')}, status=503)
+        return JsonResponse({'queued': bool(token), 'message': _('Refresh queued.') if token else _('A refresh is already running.')}, status=202)
 
 def bucket_starts(start, today, granularity):
     """First day of every bucket between ``start`` and ``today`` (inclusive).
@@ -184,9 +187,9 @@ class HistoryView(LoginOrKeyRequiredMixin, View):
         try:
             days = int(request.GET.get('days', '7'))
         except ValueError:
-            return JsonResponse({'error': 'Periodo inválido.'}, status=400)
+            return JsonResponse({'error': _('Invalid period.')}, status=400)
         if days not in PERIODS:
-            return JsonResponse({'error': 'Elige uno de los periodos disponibles.'}, status=400)
+            return JsonResponse({'error': _('Choose one of the available periods.')}, status=400)
         label, granularity = PERIODS[days]
         today = timezone.localdate()
         start = today - timedelta(days=days - 1)
@@ -205,7 +208,7 @@ class HistoryView(LoginOrKeyRequiredMixin, View):
             index = positions.get(row['bucket'].date().isoformat())
             if index is not None:
                 values[index] = float(Decimal(row['used']).quantize(Decimal('0.01')))
-        response = JsonResponse({'labels': labels, 'granularity': granularity, 'period': label, 'series': [
+        response = JsonResponse({'labels': labels, 'granularity': granularity, 'period': str(label), 'series': [
             {'provider': key[0], 'quota': key[1], 'values': values} for key, values in series.items()
         ]})
         response['Cache-Control'] = 'no-store'
@@ -213,7 +216,9 @@ class HistoryView(LoginOrKeyRequiredMixin, View):
 
 
 # Modules Home Assistant can show, each on its own page.
-EMBED_MODULES = ('chatgpt', 'claude', 'grafica')
+EMBED_MODULES = ('chatgpt', 'claude', 'chart')
+# Names of the modules in the first, Spanish-only addresses.
+EMBED_ALIASES = {'grafica': 'chart'}
 
 
 @method_decorator(xframe_options_exempt, name='dispatch')
@@ -221,18 +226,18 @@ class EmbedView(TemplateView):
     """One dashboard module alone, to show inside a Home Assistant card.
 
     The page carries no data: its script reads the key from the URL fragment
-    (#clave=…), which the browser never sends to the server, and asks the
+    (#key=…), which the browser never sends to the server, and asks the
     read-only API with it. It has no buttons, so framing it is harmless.
     """
     template_name = 'dashboard/embed.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        module = kwargs['module']
+        module = EMBED_ALIASES.get(kwargs['module'], kwargs['module'])
         if module not in EMBED_MODULES:
             raise Http404
         context['module'] = module
-        if module != 'grafica':
+        if module != 'chart':
             context['provider'] = ProviderStatus.objects.filter(provider=module, provider__in=RefreshSettings.shown_providers()).first()
             if context['provider'] is None:
                 raise Http404
@@ -251,7 +256,7 @@ class SensorView(LoginOrKeyRequiredMixin, View):
         status = ProviderStatus.objects.select_related('credential').filter(
             provider=provider, provider__in=RefreshSettings.shown_providers()).first()
         if status is None:
-            return JsonResponse({'error': 'Proveedor desconocido.'}, status=404)
+            return JsonResponse({'error': _('Unknown provider.')}, status=404)
         data = serialize_status(status)
         result = {key: data[key] for key in ('provider', 'name', 'state', 'state_label', 'used_percent',
                                              'available_percent', 'last_success_at', 'last_attempt_at')}
@@ -272,5 +277,5 @@ class SensorView(LoginOrKeyRequiredMixin, View):
 def csrf_failure(request, reason=''):
     # The dashboard reads the API with fetch(); an HTML page would only show as a JSON error.
     if request.path.startswith('/api/'):
-        return JsonResponse({'error': 'La página ha caducado. Recárgala e inténtalo de nuevo.'}, status=403)
+        return JsonResponse({'error': _('The page has expired. Reload it and try again.')}, status=403)
     return csrf.csrf_failure(request, reason)

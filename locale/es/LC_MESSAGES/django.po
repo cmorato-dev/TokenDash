@@ -1,0 +1,977 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-21 18:03+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: dashboard/accounts.py:42
+msgid "Change the initial password to continue."
+msgstr "Cambia la contraseña inicial para continuar."
+
+#: dashboard/accounts.py:64
+msgid "You cannot use the initial TokenDash password."
+msgstr "No puedes usar la contraseña inicial de TokenDash."
+
+#: dashboard/accounts.py:67
+msgid "It cannot be the initial TokenDash password."
+msgstr "No puede ser la contraseña inicial de TokenDash."
+
+#: dashboard/admin.py:64
+msgid "Key created"
+msgstr "Clave creada"
+
+#: dashboard/admin.py:76 dashboard/models.py:124
+msgid "last automatic refresh"
+msgstr "última actualización automática"
+
+#: dashboard/admin.py:78
+msgid "None yet"
+msgstr "Todavía ninguna"
+
+#: dashboard/admin.py:80
+msgid "next automatic refresh"
+msgstr "próxima actualización automática"
+
+#: dashboard/admin.py:82
+msgid "In the next minute"
+msgstr "En el próximo minuto"
+
+#: dashboard/management/commands/create_initial_admin.py:14
+msgid "There are already users: the initial administrator is not created."
+msgstr "Ya hay usuarios: no se crea el administrador inicial."
+
+#: dashboard/management/commands/create_initial_admin.py:18
+#, python-format
+msgid "Initial administrator created. Username: %(username)s · Password: %(password)s. A new password will be asked for at the first sign-in."
+msgstr "Administrador inicial creado. Usuario: %(username)s · Contraseña: %(password)s. Al entrar se pedirá elegir una contraseña nueva."
+
+#: dashboard/models.py:18
+msgid "No data"
+msgstr "Sin datos"
+
+#: dashboard/models.py:19
+msgid "Updated"
+msgstr "Actualizado"
+
+#: dashboard/models.py:20
+msgid "Session expired, sign in again"
+msgstr "Sesión expirada, reautenticar"
+
+#: dashboard/models.py:21
+msgid "Manual verification required"
+msgstr "Verificación manual requerida"
+
+#: dashboard/models.py:22
+msgid "A quota of this account could not be read"
+msgstr "No se ha podido leer una cuota de esta cuenta"
+
+#: dashboard/models.py:23
+msgid "Refresh error"
+msgstr "Error de actualización"
+
+#: dashboard/models.py:25 dashboard/models.py:64
+msgid "provider"
+msgstr "proveedor"
+
+#: dashboard/models.py:26
+msgid "source"
+msgstr "fuente"
+
+#: dashboard/models.py:26 templates/admin/scraper/connections.html:17
+msgid "Not connected"
+msgstr "Sin conectar"
+
+#: dashboard/models.py:26
+msgid "Connected account"
+msgstr "Cuenta conectada"
+
+#: dashboard/models.py:26
+msgid "Official client on the server"
+msgstr "Cliente oficial en el servidor"
+
+#: dashboard/models.py:33
+msgid "state"
+msgstr "estado"
+
+#: dashboard/models.py:34 dashboard/models.py:67
+msgid "used %"
+msgstr "% consumido"
+
+#: dashboard/models.py:35 dashboard/models.py:66
+msgid "limit"
+msgstr "límite"
+
+#: dashboard/models.py:37
+msgid "last attempt"
+msgstr "último intento"
+
+#: dashboard/models.py:38
+msgid "last valid reading"
+msgstr "último dato válido"
+
+#: dashboard/models.py:40
+msgid "last error"
+msgstr "último error"
+
+#: dashboard/models.py:48
+msgid "provider status"
+msgstr "estado de un proveedor"
+
+#: dashboard/models.py:49
+msgid "provider statuses"
+msgstr "estado de los proveedores"
+
+#: dashboard/models.py:65
+msgid "limit key"
+msgstr "clave del límite"
+
+#: dashboard/models.py:68
+msgid "read at"
+msgstr "leído el"
+
+#: dashboard/models.py:73
+msgid "reading"
+msgstr "lectura"
+
+#: dashboard/models.py:74
+msgid "reading history"
+msgstr "histórico de lecturas"
+
+#: dashboard/models.py:90
+msgid "name"
+msgstr "nombre"
+
+#: dashboard/models.py:91
+msgid "key start"
+msgstr "inicio de la clave"
+
+#: dashboard/models.py:93
+msgid "created"
+msgstr "creada"
+
+#: dashboard/models.py:94
+msgid "last used"
+msgstr "último uso"
+
+#: dashboard/models.py:98
+msgid "Home Assistant key"
+msgstr "clave de Home Assistant"
+
+#: dashboard/models.py:99 templates/admin/dashboard/integrationkey/created.html:3
+msgid "Home Assistant keys"
+msgstr "Claves de Home Assistant"
+
+#: dashboard/models.py:118
+msgid "Every 15 minutes"
+msgstr "Cada 15 minutos"
+
+#: dashboard/models.py:118
+msgid "Every 20 minutes"
+msgstr "Cada 20 minutos"
+
+#: dashboard/models.py:118
+msgid "Every 30 minutes"
+msgstr "Cada 30 minutos"
+
+#: dashboard/models.py:118
+msgid "Every 45 minutes"
+msgstr "Cada 45 minutos"
+
+#: dashboard/models.py:119
+msgid "Every hour"
+msgstr "Cada hora"
+
+#: dashboard/models.py:119
+msgid "Every 2 hours"
+msgstr "Cada 2 horas"
+
+#: dashboard/models.py:119
+msgid "Every 3 hours"
+msgstr "Cada 3 horas"
+
+#: dashboard/models.py:119
+msgid "Every 6 hours"
+msgstr "Cada 6 horas"
+
+#: dashboard/models.py:122
+msgid "refresh frequency"
+msgstr "frecuencia de actualización"
+
+#: dashboard/models.py:123
+msgid "How often the server reads the limits. The change applies from the next minute."
+msgstr "Cada cuánto lee el servidor los límites. El cambio se aplica en el siguiente minuto."
+
+#: dashboard/models.py:126
+msgid "ChatGPT and Claude"
+msgstr "ChatGPT y Claude"
+
+#: dashboard/models.py:126
+msgid "Only ChatGPT"
+msgstr "Solo ChatGPT"
+
+#: dashboard/models.py:126
+msgid "Only Claude"
+msgstr "Solo Claude"
+
+#: dashboard/models.py:128
+msgid "accounts you use"
+msgstr "cuentas que usas"
+
+#: dashboard/models.py:129
+msgid "If you only pay for one of the two subscriptions, the dashboard shows only that card and the server only reads that account."
+msgstr "Si solo pagas una de las dos suscripciones, el panel muestra solo esa tarjeta y el servidor solo consulta esa cuenta."
+
+#: dashboard/models.py:132 dashboard/models.py:133
+msgid "settings"
+msgstr "ajustes"
+
+#: dashboard/models.py:136
+msgid "Settings"
+msgstr "Ajustes"
+
+#: dashboard/views.py:28
+msgid "The server needs a claude.ai session to read the quota: connect it from \"Connect accounts\" or, on the console, with \"docker compose exec worker claude auth login\"."
+msgstr "El servidor necesita una sesión de claude.ai para leer la cuota: conéctala desde «Conectar cuentas» o, por consola, con \"docker compose exec worker claude auth login\"."
+
+#: dashboard/views.py:31
+msgid "Connect Claude in \"Connect accounts\" so the server reads its limits with the official Claude Code client."
+msgstr "Conecta Claude en «Conectar cuentas» para que el servidor lea sus límites con el cliente oficial de Claude Code."
+
+#: dashboard/views.py:36
+msgid "Press \"Refresh now\" to read the Codex limits."
+msgstr "Pulsa «Actualizar ahora» para leer los límites de Codex."
+
+#: dashboard/views.py:37
+msgid "Connect ChatGPT in \"Connect accounts\" to read the Codex limits."
+msgstr "Conecta ChatGPT en «Conectar cuentas» para leer los límites de Codex."
+
+#: dashboard/views.py:44 templates/dashboard/_history.html:6
+msgid "7 days"
+msgstr "7 días"
+
+#: dashboard/views.py:45 templates/dashboard/_history.html:6
+msgid "30 days"
+msgstr "30 días"
+
+#: dashboard/views.py:46 templates/dashboard/_history.html:6
+msgid "3 months"
+msgstr "3 meses"
+
+#: dashboard/views.py:47 templates/dashboard/_history.html:6
+msgid "6 months"
+msgstr "6 meses"
+
+#: dashboard/views.py:48 templates/dashboard/_history.html:6
+msgid "1 year"
+msgstr "1 año"
+
+#: dashboard/views.py:49 templates/dashboard/_history.html:6
+msgid "5 years"
+msgstr "5 años"
+
+#: dashboard/views.py:118
+msgid "The Home Assistant key is not valid or has been deleted."
+msgstr "La clave de Home Assistant no es válida o se ha borrado."
+
+#: dashboard/views.py:135
+msgid "Your user cannot ask for refreshes."
+msgstr "Tu usuario no puede pedir actualizaciones."
+
+#: dashboard/views.py:141 dashboard/views.py:259
+msgid "Unknown provider."
+msgstr "Proveedor desconocido."
+
+#: dashboard/views.py:143
+msgid "Connect the account again in \"Connect accounts\"."
+msgstr "Vuelve a conectar la cuenta en «Conectar cuentas»."
+
+#: dashboard/views.py:145 scraper/claude_client.py:129 scraper/claude_client.py:182
+msgid "The official Claude Code client is not installed on the server."
+msgstr "El cliente oficial de Claude Code no está instalado en el servidor."
+
+#: dashboard/views.py:147
+msgid "This account has no quota source connected."
+msgstr "Esta cuenta no tiene una fuente de cuota conectada."
+
+#: dashboard/views.py:150
+msgid "Wait a minute before refreshing again."
+msgstr "Espera un minuto antes de volver a actualizar."
+
+#: dashboard/views.py:154
+msgid "The queue is not available. Check Redis and the worker."
+msgstr "La cola no está disponible. Revisa Redis y el worker."
+
+#: dashboard/views.py:155
+msgid "Refresh queued."
+msgstr "Actualización encolada."
+
+#: dashboard/views.py:155
+msgid "A refresh is already running."
+msgstr "Ya hay una actualización en curso."
+
+#: dashboard/views.py:190
+msgid "Invalid period."
+msgstr "Periodo inválido."
+
+#: dashboard/views.py:192
+msgid "Choose one of the available periods."
+msgstr "Elige uno de los periodos disponibles."
+
+#: dashboard/views.py:280
+msgid "The page has expired. Reload it and try again."
+msgstr "La página ha caducado. Recárgala e inténtalo de nuevo."
+
+#: scraper/admin.py:4
+msgid "TokenDash · Administration"
+msgstr "TokenDash · Administración"
+
+#: scraper/admin.py:6 templates/admin/dashboard/integrationkey/created.html:3 templates/admin/scraper/connections.html:3 templates/base.html:23
+msgid "Administration"
+msgstr "Administración"
+
+#: scraper/claude_client.py:38
+msgid "The server could not read the Claude quota. The last reading is kept."
+msgstr "El servidor no ha podido consultar la cuota de Claude. Se conserva la última lectura."
+
+#: scraper/claude_client.py:101
+msgid "Claude Code is connected to your claude.ai account, but it publishes no subscription quotas. Your plan may not expose them."
+msgstr "Claude Code está conectado a tu cuenta de claude.ai, pero no publica cuotas de suscripción. Puede que tu plan no las exponga."
+
+#: scraper/claude_client.py:104
+msgid "The server uses a token from \"claude setup-token\", which Anthropic limits to model requests and which cannot read the quota. Sign in with \"claude auth login\" on the server and remove CLAUDE_CODE_OAUTH_TOKEN from the .env."
+msgstr "El servidor usa un token de \"claude setup-token\", que Anthropic limita a las peticiones al modelo y no permite consultar la cuota. Inicia sesión con \"claude auth login\" en el servidor y quita CLAUDE_CODE_OAUTH_TOKEN del .env."
+
+#: scraper/claude_client.py:108
+msgid "The server is signed in with an API key. That kind of credential publishes no subscription quotas; a claude.ai session is needed."
+msgstr "El servidor está autenticado con una clave de API. Ese tipo de credencial no publica cuotas de suscripción; hace falta una sesión de claude.ai."
+
+#: scraper/claude_client.py:111
+msgid "The server is not signed in. Run \"claude auth login\" on the server to connect the claude.ai account."
+msgstr "El servidor no tiene ninguna sesión iniciada. Ejecuta \"claude auth login\" en el servidor para conectar la cuenta de claude.ai."
+
+#: scraper/claude_client.py:114
+msgid "Claude Code published no subscription quotas for the connected account."
+msgstr "Claude Code no publicó cuotas de suscripción para la cuenta conectada."
+
+#: scraper/claude_client.py:115
+msgid "Claude Code published no subscription quotas: the account is not connected to a claude.ai subscription."
+msgstr "Claude Code no publicó cuotas de suscripción: la cuenta no está conectada con una suscripción de claude.ai."
+
+#: scraper/claude_client.py:122
+msgid "claude.ai session connected"
+msgstr "Sesión de claude.ai conectada"
+
+#: scraper/claude_client.py:123
+msgid "Token from \"claude setup-token\" (cannot read the quota)"
+msgstr "Token de \"claude setup-token\" (no puede leer la cuota)"
+
+#: scraper/claude_client.py:124 scraper/claude_client.py:125
+msgid "API key (publishes no quotas)"
+msgstr "Clave de API (no publica cuotas)"
+
+#: scraper/claude_client.py:126
+msgid "Third-party credential (publishes no quotas)"
+msgstr "Credencial de un tercero (no publica cuotas)"
+
+#: scraper/claude_client.py:127
+msgid "Not signed in"
+msgstr "Sin sesión iniciada"
+
+#: scraper/claude_client.py:130
+msgid "The client's sign-in could not be checked on the server."
+msgstr "No se ha podido comprobar el inicio de sesión del cliente en el servidor."
+
+#: scraper/claude_client.py:142
+msgid "Unknown sign-in method"
+msgstr "Método de acceso desconocido"
+
+#: scraper/claude_client.py:190
+msgid "The official Claude Code client did not answer the usage request."
+msgstr "El cliente oficial de Claude Code no respondió a la consulta de uso."
+
+#: scraper/claude_client.py:195
+msgid "Claude Code answered without usable quota windows."
+msgstr "Claude Code respondió sin ventanas de cuota utilizables."
+
+#: scraper/claude_client_views.py:49
+msgid "The server has not checked the Claude session yet."
+msgstr "El servidor todavía no ha comprobado la sesión de Claude."
+
+#: scraper/claude_client_views.py:63 scraper/codex_views.py:28
+msgid "Use POST."
+msgstr "Utiliza POST."
+
+#: scraper/claude_client_views.py:69 scraper/codex_views.py:35
+msgid "Invalid request."
+msgstr "Solicitud no válida."
+
+#: scraper/claude_client_views.py:75
+msgid "The official Claude Code client is not installed on the server. Rebuild the image or set CLAUDE_CLIENT_PATH in the .env."
+msgstr "El servidor no tiene el cliente oficial de Claude Code instalado. Reconstruye la imagen o indica CLAUDE_CLIENT_PATH en el .env."
+
+#: scraper/claude_client_views.py:83
+msgid "The server is checking the claude.ai session and reading the Claude limits. Wait a few seconds and reload this page."
+msgstr "El servidor comprueba la sesión de claude.ai y lee los límites de Claude. Espera unos segundos y vuelve a cargar esta página."
+
+#: scraper/claude_client_views.py:86
+msgid "The server will read the Claude limits at the next automatic refresh. If they do not appear, check that the account is connected on the server."
+msgstr "El servidor consultará los límites de Claude en la próxima actualización automática. Si no aparecen, comprueba que la cuenta esté conectada en el servidor."
+
+#: scraper/claude_client_views.py:92
+#, python-format
+msgid "Connect it on the server with: %(command)s."
+msgstr "Conéctala en el servidor con: %(command)s."
+
+#: scraper/claude_client_views.py:94
+#, python-format
+msgid "If the quota does not appear, check the session on the server with: %(command)s."
+msgstr "Si la cuota no aparece, comprueba la sesión en el servidor con: %(command)s."
+
+#: scraper/claude_client_views.py:102
+msgid "The server is checking the claude.ai session. Wait a few seconds and reload this page."
+msgstr "El servidor está comprobando la sesión de claude.ai. Espera unos segundos y vuelve a cargar esta página."
+
+#: scraper/claude_client_views.py:105
+msgid "The server will check it at the next automatic refresh."
+msgstr "El servidor lo comprobará en la próxima actualización automática."
+
+#: scraper/claude_client_views.py:108 scraper/codex_views.py:74
+msgid "Unknown action."
+msgstr "Acción desconocida."
+
+#: scraper/codex_oauth.py:37
+msgid "The connection with ChatGPT has expired. Sign in again in \"Connect accounts\"."
+msgstr "La conexión con ChatGPT ha caducado. Vuelve a iniciar sesión en «Conectar cuentas»."
+
+#: scraper/codex_oauth.py:41
+msgid "ChatGPT refused the usage request from the server. The latest data is kept."
+msgstr "ChatGPT ha rechazado la consulta de uso desde el servidor. Se conservan los últimos datos."
+
+#: scraper/codex_oauth.py:45
+msgid "ChatGPT could not be reached. It will be retried automatically."
+msgstr "No se ha podido contactar con ChatGPT. Se reintentará automáticamente."
+
+#: scraper/codex_oauth.py:100
+msgid "The pasted address is too long."
+msgstr "La dirección pegada es demasiado larga."
+
+#: scraper/codex_oauth.py:103
+msgid "Paste the full address of the tab, which starts with http://localhost:1455/auth/callback."
+msgstr "Pega la dirección completa de la pestaña, que empieza por http://localhost:1455/auth/callback."
+
+#: scraper/codex_oauth.py:106
+msgid "ChatGPT did not authorise the access. Try again."
+msgstr "ChatGPT no ha autorizado el acceso. Vuelve a intentarlo."
+
+#: scraper/codex_oauth.py:109
+msgid "The pasted address does not contain the authorisation code."
+msgstr "La dirección pegada no contiene el código de autorización."
+
+#: scraper/codex_oauth.py:147
+msgid "ChatGPT did not accept the code. Codes expire in a few minutes: sign in again and paste the address straight away."
+msgstr "ChatGPT no ha aceptado el código. Los códigos caducan en pocos minutos: inicia sesión de nuevo y pega la dirección enseguida."
+
+#: scraper/codex_views.py:41
+msgid "The ChatGPT sign-in has opened in another tab. When you finish, copy the address of that tab and paste it here."
+msgstr "Se ha abierto el inicio de sesión de ChatGPT en otra pestaña. Cuando termines, copia la dirección de esa pestaña y pégala aquí."
+
+#: scraper/codex_views.py:46
+msgid "The sign-in has expired. Press \"Sign in with ChatGPT\" again."
+msgstr "El inicio de sesión ha caducado. Pulsa de nuevo «Iniciar sesión con ChatGPT»."
+
+#: scraper/codex_views.py:50
+msgid "The pasted address does not belong to this sign-in. Start again."
+msgstr "La dirección pegada no corresponde a este inicio de sesión. Vuelve a empezar."
+
+#: scraper/codex_views.py:62
+msgid "ChatGPT connected. The Codex limits are being read; after that they refresh on their own."
+msgstr "ChatGPT conectado. Estamos leyendo los límites de Codex; después se actualizarán solos."
+
+#: scraper/codex_views.py:64
+msgid "ChatGPT connected. The queue is not available now; the limits will be read at the next refresh."
+msgstr "ChatGPT conectado. La cola no está disponible ahora; los límites se leerán en la próxima actualización."
+
+#: scraper/codex_views.py:72
+msgid "ChatGPT disconnected and its credential deleted from TokenDash. Earlier readings are kept."
+msgstr "ChatGPT desconectado y credencial eliminada de TokenDash. Se conservan las lecturas anteriores."
+
+#: scraper/connection_views.py:12
+msgid "Only the main administrator can connect accounts."
+msgstr "Solo el administrador principal puede conectar cuentas."
+
+#: scraper/connection_views.py:19
+msgid "Connect AI accounts"
+msgstr "Conectar cuentas de IA"
+
+#: scraper/management/commands/claude_status.py:20
+#, python-format
+msgid "Claude session on the server: %(label)s"
+msgstr "Sesión de Claude en el servidor: %(label)s"
+
+#: scraper/management/commands/claude_status.py:22
+#, python-format
+msgid "Sign in with: %(command)s"
+msgstr "Inicia la sesión con: %(command)s"
+
+#: scraper/management/commands/claude_status.py:28
+msgid "Reading the quota on the server: on."
+msgstr "Lectura de la cuota en el servidor: activada."
+
+#: scraper/management/commands/claude_status.py:31
+msgid "A refresh is already running: wait a minute and run the command again."
+msgstr "Ya hay una actualización en curso: espera un minuto y repite el comando."
+
+#: scraper/management/commands/claude_status.py:38
+#, python-format
+msgid "The quota could not be read: %(reason)s"
+msgstr "No se ha podido leer la cuota: %(reason)s"
+
+#: scraper/management/commands/claude_status.py:40
+#, python-format
+msgid "%(label)s: %(percent)s %% used"
+msgstr "%(label)s: %(percent)s %% consumido"
+
+#: scraper/management/commands/claude_status.py:46
+#, python-format
+msgid "Claude quota updated on the dashboard (%(when)s)."
+msgstr "Cuota de Claude actualizada en el dashboard (%(when)s)."
+
+#: scraper/quotas.py:17
+msgid "5-hour session"
+msgstr "Sesión de 5 horas"
+
+#: scraper/quotas.py:17
+msgid "Week · all models"
+msgstr "Semana · todos los modelos"
+
+#: scraper/quotas.py:23
+msgid "Could not refresh. Check the connection and the settings."
+msgstr "No se pudo actualizar. Revisa la conexión y la configuración."
+
+#: scraper/quotas.py:35
+msgid "Session expired or missing, sign in again."
+msgstr "Sesión expirada o ausente, reautenticar."
+
+#: scraper/quotas.py:40
+msgid "The provider asks for a manual verification in the browser."
+msgstr "El proveedor requiere una verificación manual en el navegador."
+
+#: scraper/quotas.py:45
+msgid "No recognisable quota percentage was found. Check the connection in \"Connect accounts\"; your plan may not publish this metric."
+msgstr "No hemos encontrado un porcentaje de cuota reconocible. Comprueba la conexión en «Conectar cuentas»; es posible que tu plan no publique esta métrica."
+
+#: scraper/quotas.py:84
+#, python-format
+msgid "Resets on %(day)s at %(time)s"
+msgstr "Se reinicia el %(day)s a las %(time)s"
+
+#: scraper/quotas.py:85
+msgctxt "day and month of a reset"
+msgid "M j"
+msgstr "j/n"
+
+#: scraper/quotas.py:94
+#, python-format
+msgid "Codex · %(hours)s h window"
+msgstr "Codex · ventana de %(hours)s h"
+
+#: scraper/quotas.py:107
+msgid "Codex · week"
+msgstr "Codex · semana"
+
+#: scraper/quotas.py:109
+msgid "Codex · month"
+msgstr "Codex · mes"
+
+#: templates/admin/dashboard/integrationkey/created.html:7
+#, python-format
+msgid "Key \"%(name)s\" created"
+msgstr "Clave «%(name)s» creada"
+
+#: templates/admin/dashboard/integrationkey/created.html:8
+msgid "<strong>Copy it now: it will not be shown again.</strong> If you lose it, delete this key and create another. The key can only read the limits; it cannot refresh, connect or change anything."
+msgstr "<strong>Cópiala ahora: no se volverá a mostrar.</strong> Si la pierdes, borra esta clave y crea otra. La clave solo permite leer los límites; no puede actualizar, conectar ni cambiar nada."
+
+#: templates/admin/dashboard/integrationkey/created.html:11
+msgid "Modules for a “Webpage” card"
+msgstr "Módulos para una tarjeta «Página web»"
+
+#: templates/admin/dashboard/integrationkey/created.html:12
+msgid "Each module stands on its own: add to Home Assistant only the ones you want, each on its own card. The key goes after the <code>#</code>, so the browser does not send it to the server and it does not end up in its logs."
+msgstr "Cada módulo es independiente: añade en Home Assistant solo los que quieras, cada uno en su propia tarjeta. La clave va detrás de <code>#</code>, así que el navegador no la envía al servidor ni queda en sus registros."
+
+#: templates/admin/dashboard/integrationkey/created.html:14 templates/dashboard/_history.html:5 templates/dashboard/embed.html:11
+msgid "Limits over time"
+msgstr "Evolución de los límites"
+
+#: templates/admin/dashboard/integrationkey/created.html:16
+msgid "The chart opens on 7 days; for another period add <code>?days=30</code> before the <code>#</code> (7, 30, 90, 182, 365 and 1825 are valid)."
+msgstr "La gráfica abre en 7 días; para otro periodo añade <code>?days=30</code> antes del <code>#</code> (valen 7, 30, 90, 182, 365 y 1825)."
+
+#: templates/admin/dashboard/integrationkey/created.html:18
+msgid "Sensors (optional)"
+msgstr "Sensores (opcional)"
+
+#: templates/admin/dashboard/integrationkey/created.html:19
+msgid "To have the percentages as Home Assistant entities (automations, history, your own cards), each provider has its own address. It is requested with the <code>Authorization: Bearer</code> header and the key; the configuration examples are in <code>docs/HOME_ASSISTANT.md</code>."
+msgstr "Para tener los porcentajes como entidades de Home Assistant (automatizaciones, historial, tarjetas propias), cada proveedor tiene su dirección. Se pide con la cabecera <code>Authorization: Bearer</code> y la clave; los ejemplos de configuración están en <code>docs/es/HOME_ASSISTANT.md</code>."
+
+#: templates/admin/dashboard/integrationkey/created.html:24
+msgid "Done"
+msgstr "Hecho"
+
+#: templates/admin/index.html:6
+msgid "Connect your ChatGPT and Claude accounts"
+msgstr "Conecta tus cuentas de ChatGPT y Claude"
+
+#: templates/admin/index.html:7
+msgid "The server reads the Claude limits with the official client and the ChatGPT (Codex) limits with your OpenAI account. No PC needs to stay on and no agent needs to be installed."
+msgstr "El servidor lee los límites de Claude con el cliente oficial y los de ChatGPT (Codex) con tu cuenta de OpenAI. No hace falta ningún PC encendido ni agente instalado."
+
+#: templates/admin/index.html:8
+msgid "Connect accounts →"
+msgstr "Conectar cuentas →"
+
+#: templates/admin/scraper/connections.html:3 templates/base.html:24
+msgid "Connect accounts"
+msgstr "Conectar cuentas"
+
+#: templates/admin/scraper/connections.html:7
+#, python-format
+msgid "You only use ChatGPT. If you also pay for the other subscription, turn it on in <a href=\"%(settings_url)s\">Settings</a>."
+msgstr "Solo usas ChatGPT. Si también pagas la otra suscripción, actívala en <a href=\"%(settings_url)s\">Ajustes</a>."
+
+#: templates/admin/scraper/connections.html:7
+#, python-format
+msgid "You only use Claude. If you also pay for the other subscription, turn it on in <a href=\"%(settings_url)s\">Settings</a>."
+msgstr "Solo usas Claude. Si también pagas la otra suscripción, actívala en <a href=\"%(settings_url)s\">Ajustes</a>."
+
+#: templates/admin/scraper/connections.html:10
+msgid "CODEX LIMITS"
+msgstr "LÍMITES DE CODEX"
+
+#: templates/admin/scraper/connections.html:11
+msgid "ChatGPT: Codex limits (5 hours and week)"
+msgstr "ChatGPT: límites de Codex (5 horas y semana)"
+
+#: templates/admin/scraper/connections.html:13
+msgid "Account connected"
+msgstr "Cuenta conectada"
+
+#: templates/admin/scraper/connections.html:13
+#, python-format
+msgid "plan %(plan)s"
+msgstr "plan %(plan)s"
+
+#: templates/admin/scraper/connections.html:13
+#, python-format
+msgid "since %(since)s"
+msgstr "desde %(since)s"
+
+#: templates/admin/scraper/connections.html:14 templates/admin/scraper/connections.html:39
+#, python-format
+msgid "last reading: %(when)s"
+msgstr "última lectura: %(when)s"
+
+#: templates/admin/scraper/connections.html:19
+#, python-format
+msgid "The server reads the same limits Codex shows every %(minutes)s minutes, even with your browser closed. You only need to sign in <strong>once</strong>:"
+msgstr "El servidor consulta cada %(minutes)s minutos los mismos límites que muestra Codex, aunque tengas el navegador cerrado. Solo hace falta iniciar sesión <strong>una vez</strong>:"
+
+#: templates/admin/scraper/connections.html:21
+msgid "Press <strong>Sign in with ChatGPT</strong>. The official OpenAI page opens in another tab; sign in with your account and authorise."
+msgstr "Pulsa <strong>Iniciar sesión con ChatGPT</strong>. Se abrirá la página oficial de OpenAI en otra pestaña; entra con tu cuenta y autoriza."
+
+#: templates/admin/scraper/connections.html:22
+msgid "When you finish, that tab shows <em>“This site can’t be reached”</em> at <code>localhost:1455</code>. <strong>That is expected.</strong> Copy the full address from the address bar."
+msgstr "Al terminar, esa pestaña mostrará <em>«No se puede acceder a este sitio»</em> en <code>localhost:1455</code>. <strong>Es normal.</strong> Copia la dirección completa de la barra de direcciones."
+
+#: templates/admin/scraper/connections.html:23
+msgid "Paste it here and press <strong>Complete connection</strong>. The code expires in a few minutes."
+msgstr "Pégala aquí y pulsa <strong>Completar conexión</strong>. El código caduca en pocos minutos."
+
+#: templates/admin/scraper/connections.html:25
+msgid "Sign in with ChatGPT"
+msgstr "Iniciar sesión con ChatGPT"
+
+#: templates/admin/scraper/connections.html:25
+msgid "Disconnect"
+msgstr "Desconectar"
+
+#: templates/admin/scraper/connections.html:27
+msgid "Address of the tab (starts with http://localhost:1455/auth/callback)"
+msgstr "Dirección de la pestaña (empieza por http://localhost:1455/auth/callback)"
+
+#: templates/admin/scraper/connections.html:28
+msgid "Complete connection"
+msgstr "Completar conexión"
+
+#: templates/admin/scraper/connections.html:31
+msgid "TokenDash keeps the access token encrypted in its database and renews it on its own; it never stores your password. It uses the same endpoints as the open-source Codex client: they are not a documented API and OpenAI could change them. If it fails, the latest data is kept. ChatGPT publishes no percentages for regular chats; the only ones are those of Codex."
+msgstr "TokenDash guarda el token de acceso cifrado en su base de datos y lo renueva solo; nunca guarda tu contraseña. Usa los mismos endpoints que el cliente Codex de código abierto: no son una API documentada y OpenAI podría cambiarlos. Si falla, se conservan los últimos datos. ChatGPT no publica porcentajes para los chats normales; los únicos son los de Codex."
+
+#: templates/admin/scraper/connections.html:37
+msgid "CLAUDE QUOTA"
+msgstr "CUOTA DE CLAUDE"
+
+#: templates/admin/scraper/connections.html:38
+#, python-format
+msgid "Claude: quota %% (5 hours and week)"
+msgstr "Claude: %% de cuota (5 horas y semana)"
+
+#: templates/admin/scraper/connections.html:42
+msgid "The <strong>server</strong> reads the session and weekly percentages with the official Claude Code client itself. No PC needs to stay on and no agent needs to be installed, and the client keeps the session on its own."
+msgstr "El <strong>servidor</strong> consulta los porcentajes de sesión y semana con el propio cliente oficial de Claude Code. No hace falta ningún PC encendido ni agente instalado, y el cliente conserva la sesión por su cuenta."
+
+#: templates/admin/scraper/connections.html:44
+msgid "Session state on the server"
+msgstr "Estado de la sesión en el servidor"
+
+#: templates/admin/scraper/connections.html:46
+#, python-format
+msgid "Last check: %(when)s."
+msgstr "Última comprobación: %(when)s."
+
+#: templates/admin/scraper/connections.html:48
+msgid "The client keeps this session and renews it on its own. The linking only has to be repeated if the session expires or you sign out of claude.ai on all devices."
+msgstr "El cliente conserva esta sesión y la renueva solo. Solo hay que repetir la vinculación si la sesión caduca o se cierra sesión en claude.ai desde todos los dispositivos."
+
+#: templates/admin/scraper/connections.html:50
+msgid "For the server to read the quota, <strong>link the claude.ai account once</strong>, from a console on the server (SSH). Follow the guide below or send it to whoever runs the server."
+msgstr "Para que el servidor lea la cuota hay que <strong>vincular la cuenta de claude.ai una sola vez</strong>, desde una consola del servidor (SSH). Sigue la guía de abajo o envíasela a quien administre el servidor."
+
+#: templates/admin/scraper/connections.html:54
+msgid "<strong>Step-by-step guide to link Claude</strong> (done only once)"
+msgstr "<strong>Guía paso a paso para vincular Claude</strong> (se hace una sola vez)"
+
+#: templates/admin/scraper/connections.html:55
+msgid "Each command has its own <strong>Copy</strong> button: paste them in order into a terminal on the server (or over SSH). If the account belongs to someone else, they do step 4. The same guide is in <code>docs/LINK_CLAUDE.md</code>."
+msgstr "Cada comando tiene su botón <strong>Copiar</strong>: pégalos en orden en una terminal del servidor (o por SSH). Si la cuenta es de otra persona, ella hace el paso 4. La misma guía está en <code>docs/es/VINCULAR_CLAUDE.md</code>."
+
+#: templates/admin/scraper/connections.html:57
+msgid "<strong>Open the server</strong> and the TokenDash folder (the one with <code>docker-compose.yml</code>; change it if it is not <code>~/tokendash</code>):"
+msgstr "<strong>Entrar en el servidor</strong> y en la carpeta de TokenDash (la que contiene <code>docker-compose.yml</code>; cámbiala si no es <code>~/tokendash</code>):"
+
+#: templates/admin/scraper/connections.html:58
+msgid "user@tokendash-server"
+msgstr "usuario@servidor-tokendash"
+
+#: templates/admin/scraper/connections.html:58 templates/admin/scraper/connections.html:59 templates/admin/scraper/connections.html:62 templates/admin/scraper/connections.html:64 templates/admin/scraper/connections.html:68
+msgid "Copy"
+msgstr "Copiar"
+
+#: templates/admin/scraper/connections.html:60
+msgid "If <code>docker</code> answers <em>permission denied</em>, put <code>sudo</code> before the commands."
+msgstr "Si <code>docker</code> responde <em>permission denied</em>, antepón <code>sudo</code> a los comandos."
+
+#: templates/admin/scraper/connections.html:61
+msgid "<strong>See whether it is already linked.</strong> If <code>\"authMethod\": \"claude.ai\"</code> appears, skip to step 6."
+msgstr "<strong>Ver si ya está vinculado.</strong> Si aparece <code>\"authMethod\": \"claude.ai\"</code>, salta al paso 6."
+
+#: templates/admin/scraper/connections.html:63
+msgid "<strong>Sign in.</strong> The terminal shows an address that starts with <code>https://claude.com/cai/oauth/authorize</code> and waits: do not close it. Copy the full address (it is long; if it wraps over several lines, join them) and open it in the browser."
+msgstr "<strong>Iniciar sesión.</strong> El terminal muestra una dirección que empieza por <code>https://claude.com/cai/oauth/authorize</code> y se queda esperando: no lo cierres. Copia la dirección completa (es larga; si se parte en varias líneas, únelas) y ábrela en el navegador."
+
+#: templates/admin/scraper/connections.html:65
+msgid "<strong>Authorise.</strong> In the browser, sign in with the claude.ai account, press <strong>Authorize</strong> and copy the <strong>code</strong> the page shows."
+msgstr "<strong>Autorizar.</strong> En el navegador, entra con la cuenta de claude.ai, pulsa <strong>Autorizar</strong> y copia el <strong>código</strong> que muestra la página."
+
+#: templates/admin/scraper/connections.html:66
+msgid "<strong>Paste the code</strong> into the waiting terminal and press Enter. <code>Login successful</code> should appear. Paste <strong>only the code</strong>, without the address; if it expires, repeat step 3."
+msgstr "<strong>Pegar el código</strong> en el terminal que esperaba y pulsar Enter. Debe aparecer <code>Login successful</code>. Pega <strong>solo el código</strong>, sin la dirección; si caduca, repite el paso 3."
+
+#: templates/admin/scraper/connections.html:67
+msgid "<strong>Check and turn on.</strong> Check the session, turn on reading on the server and refresh the quota right away. It should end with “Claude quota updated on the dashboard”."
+msgstr "<strong>Comprobar y activar.</strong> Comprueba la sesión, activa la lectura en el servidor y actualiza la cuota en ese momento. Debe terminar con «Cuota de Claude actualizada en el dashboard»."
+
+#: templates/admin/scraper/connections.html:69
+msgid "<strong>Check here.</strong> Press <strong>Check the session now</strong> (below): it should say “claude.ai session connected”. The dashboard will show Claude as Updated."
+msgstr "<strong>Revisar aquí.</strong> Pulsa <strong>Comprobar ahora la sesión</strong> (abajo): debe decir «Sesión de claude.ai conectada». El dashboard mostrará Claude como Actualizado."
+
+#: templates/admin/scraper/connections.html:71
+msgid "Copy the whole guide"
+msgstr "Copiar la guía completa"
+
+#: templates/admin/scraper/connections.html:72
+msgid "<strong>Do not use <code>claude setup-token</code></strong>: Anthropic limits that token to sending messages to the model and it cannot read the quota. To unlink the server: <code>docker compose exec worker claude auth logout</code>."
+msgstr "<strong>No uses <code>claude setup-token</code></strong>: Anthropic limita ese token a enviar mensajes al modelo y no puede leer la cuota. Para desvincular el servidor: <code>docker compose exec worker claude auth logout</code>."
+
+#: templates/admin/scraper/connections.html:74
+msgid "Check the session now"
+msgstr "Comprobar ahora la sesión"
+
+#: templates/admin/scraper/connections.html:78
+msgid "The session and weekly percentages are read <strong>on the server</strong>. The request is experimental and may change; if it fails, the last reading is kept with its date."
+msgstr "Los porcentajes de sesión y semana se leen <strong>en el servidor</strong>. La consulta es experimental y puede cambiar; si falla, se conserva la última lectura con su fecha."
+
+#: templates/admin/scraper/connections.html:80
+msgid "Turn on reading on the server so Claude appears on the dashboard. The server sends no messages to the model, extracts no credentials and only publishes the percentage and the reset date."
+msgstr "Activa la lectura en el servidor para que Claude aparezca en el panel. El servidor no envía mensajes al modelo, no extrae credenciales y solo publica el porcentaje y la fecha de reinicio."
+
+#: templates/admin/scraper/connections.html:81
+msgid "Let the server read the Claude limits"
+msgstr "Que el servidor consulte los límites de Claude"
+
+#: templates/admin/scraper/connections.html:87
+msgid "Back to the dashboard →"
+msgstr "Volver al dashboard →"
+
+#: templates/base.html:9
+msgid "TokenDash · AI usage"
+msgstr "TokenDash · Consumo de IA"
+
+#: templates/base.html:22 templates/registration/login.html:12
+msgid "Password"
+msgstr "Contraseña"
+
+#: templates/base.html:26
+msgid "Sign out"
+msgstr "Salir"
+
+#: templates/base.html:32
+msgid "Quota data visible in your accounts"
+msgstr "Datos de las cuotas visibles en tus cuentas"
+
+#: templates/base.html:32
+msgid "Time zone:"
+msgstr "Zona horaria:"
+
+#: templates/dashboard/_history.html:5
+msgid "Average of the percentage observed per quota. Resets can lower the value."
+msgstr "Media del porcentaje observado por cuota. Los reinicios pueden reducir el valor."
+
+#: templates/dashboard/_history.html:6
+msgid "Period"
+msgstr "Periodo"
+
+#: templates/dashboard/_history.html:8
+msgid "Usage history"
+msgstr "Histórico de consumo"
+
+#: templates/dashboard/_provider_card.html:9
+msgid "Share of the quota available"
+msgstr "Porcentaje de cuota disponible"
+
+#: templates/dashboard/_provider_card.html:9
+msgid "available"
+msgstr "disponible"
+
+#: templates/dashboard/_provider_card.html:10
+msgid "No confirmed reading"
+msgstr "Sin lectura confirmada"
+
+#: templates/dashboard/_provider_card.html:10
+msgid "used"
+msgstr "consumido"
+
+#: templates/dashboard/_provider_card.html:16
+msgid "Last valid reading"
+msgstr "Último dato válido"
+
+#: templates/dashboard/_provider_card.html:16
+msgid "Never"
+msgstr "Nunca"
+
+#: templates/dashboard/_provider_card.html:17
+msgid "Refresh now"
+msgstr "Actualizar ahora"
+
+#: templates/dashboard/index.html:5
+msgid "AI USAGE"
+msgstr "CONSUMO DE IA"
+
+#: templates/dashboard/index.html:5
+msgid "The pulse of your accounts."
+msgstr "El pulso de tus cuentas."
+
+#: templates/dashboard/index.html:6
+#, python-format
+msgid "Limits and quotas of your %(name)s account."
+msgstr "Límites y cuotas de tu cuenta de %(name)s."
+
+#: templates/dashboard/index.html:6
+msgid "Limits and quotas of Claude and ChatGPT, kept in sync."
+msgstr "Límites y cuotas de Claude y ChatGPT sincronizados."
+
+#: templates/dashboard/index.html:11
+msgid "Limits published by the providers"
+msgstr "Límites publicados por los proveedores"
+
+#: templates/dashboard/index.html:19
+msgid "The percentage is the quota published by each provider, not an estimated token count. Earlier data is kept if a refresh fails."
+msgstr "El porcentaje representa la cuota publicada por cada proveedor, no un recuento estimado de tokens. Los datos anteriores se conservan si una actualización falla."
+
+#: templates/registration/login.html:5
+msgid "PRIVATE ACCESS"
+msgstr "ACCESO PRIVADO"
+
+#: templates/registration/login.html:6
+msgid "Your usage, at a glance."
+msgstr "Tu consumo, de un vistazo."
+
+#: templates/registration/login.html:7
+msgid "Sign in with your TokenDash user."
+msgstr "Inicia sesión con tu usuario de TokenDash."
+
+#: templates/registration/login.html:8
+msgid "Wrong username or password."
+msgstr "Usuario o contraseña incorrectos."
+
+#: templates/registration/login.html:11
+msgid "Username"
+msgstr "Usuario"
+
+#: templates/registration/login.html:14
+msgid "Open the dashboard →"
+msgstr "Entrar al panel →"
+
+#: templates/registration/password_change_done.html:5 templates/registration/password_change_form.html:5
+msgid "YOUR ACCOUNT"
+msgstr "TU CUENTA"
+
+#: templates/registration/password_change_done.html:6
+msgid "Password changed"
+msgstr "Contraseña cambiada"
+
+#: templates/registration/password_change_done.html:7
+msgid "Next time, sign in with the new password."
+msgstr "La próxima vez entra con la contraseña nueva."
+
+#: templates/registration/password_change_done.html:8
+#, python-format
+msgid "In <a class=\"text-emerald-300 hover:text-white\" href=\"%(users_url)s\">Administration → Users</a> you can change your username or create new users."
+msgstr "En <a class=\"text-emerald-300 hover:text-white\" href=\"%(users_url)s\">Administración → Usuarios</a> puedes cambiar tu nombre de usuario o crear usuarios nuevos."
+
+#: templates/registration/password_change_done.html:9
+msgid "Go to the dashboard →"
+msgstr "Ir al panel →"
+
+#: templates/registration/password_change_form.html:5
+msgid "FIRST SIGN-IN"
+msgstr "PRIMER ACCESO"
+
+#: templates/registration/password_change_form.html:6
+msgid "Choose a new password"
+msgstr "Elige una contraseña nueva"
+
+#: templates/registration/password_change_form.html:7
+msgid "You signed in with the initial TokenDash password, which is public. Change it to continue."
+msgstr "Has entrado con la contraseña inicial de TokenDash, que es pública. Cámbiala para continuar."
+
+#: templates/registration/password_change_form.html:16
+msgid "Save the password"
+msgstr "Guardar la contraseña"

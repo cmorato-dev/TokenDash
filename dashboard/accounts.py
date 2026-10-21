@@ -1,7 +1,7 @@
 """First sign-in of a new installation.
 
 The first deployment creates the administrator ``admin`` with the password
-``tokendash`` (``crear_admin_inicial``). Whoever signs in with that password is
+``tokendash`` (``create_initial_admin``). Whoever signs in with that password is
 sent to the password change page and cannot use anything else until they choose
 a new one. Usernames, new users and later password changes are managed from the
 administration panel.
@@ -13,6 +13,7 @@ from django.dispatch import receiver
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext as _
 
 DEFAULT_USERNAME = 'admin'
 DEFAULT_PASSWORD = 'tokendash'
@@ -34,10 +35,11 @@ class PasswordChangeRequiredMiddleware:
 
     def __call__(self, request):
         if request.session.get(SESSION_FLAG) and request.user.is_authenticated:
-            allowed = {reverse('password_change'), reverse('logout'), reverse('admin:logout')}
+            # The script catalog too: the change page shows its messages in the right language.
+            allowed = {reverse('password_change'), reverse('logout'), reverse('admin:logout'), reverse('javascript-catalog')}
             if request.path not in allowed:
                 if request.path.startswith('/api/'):
-                    return JsonResponse({'error': 'Cambia la contraseña inicial para continuar.'}, status=403)
+                    return JsonResponse({'error': _('Change the initial password to continue.')}, status=403)
                 return redirect('password_change')
         return self.get_response(request)
 
@@ -59,7 +61,7 @@ class NotDefaultPasswordValidator:
 
     def validate(self, password, user=None):
         if password == DEFAULT_PASSWORD:
-            raise ValidationError('No puedes usar la contraseña inicial de TokenDash.', code='password_is_default')
+            raise ValidationError(_('You cannot use the initial TokenDash password.'), code='password_is_default')
 
     def get_help_text(self):
-        return 'No puede ser la contraseña inicial de TokenDash.'
+        return _('It cannot be the initial TokenDash password.')

@@ -18,9 +18,9 @@ if address:
         ipaddress.ip_address(address)
     except ValueError:
         if not re.fullmatch(r'[A-Za-z0-9.-]+', address):
-            sys.exit(f'«{address}» no es una IP ni un nombre de equipo válido.')
+            sys.exit(f'"{address}" is not a valid IP address or computer name.')
 if target.exists():
-    print('.env ya existe; se conserva sin cambios.')
+    print('.env already exists; it is kept unchanged.')
 else:
     contents = (root / '.env.example').read_text(encoding='utf-8')
     contents = contents.replace('replace-with-a-long-random-secret', secrets.token_urlsafe(64))
@@ -33,8 +33,8 @@ else:
     with target.open('x', encoding='utf-8', newline='\n') as stream:
         stream.write(contents)
     target.chmod(0o600)
-    print('.env creado con secretos aleatorios.')
+    print('.env created with random secrets.')
     if address:
-        print(f'TokenDash se podrá abrir desde la red en http://{address}:8000')
+        print(f'TokenDash can be opened from the network at http://{address}:8000')
     else:
-        print('TokenDash se podrá abrir solo desde este equipo, en http://localhost:8000')
+        print('TokenDash can be opened only from this computer, at http://localhost:8000')

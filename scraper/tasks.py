@@ -52,7 +52,7 @@ def check_claude_session():
     try:
         return publish_client_auth_method()
     except Exception:
-        logger.warning('No se ha podido comprobar la sesión de Claude en el servidor.')
+        logger.warning('The Claude session on the server could not be checked.')
         return None
 
 def claim_refresh(provider_id):
@@ -119,7 +119,7 @@ def refresh_provider(provider_id, token):
             try:
                 publish_client_auth_method()
             except Exception:
-                logger.warning('No se ha podido publicar el estado de la sesión de Claude.')
+                logger.warning('The state of the Claude session could not be published.')
             readings = client_readings()
         else:
             # Not connected: there is nothing to read.
@@ -148,4 +148,4 @@ def refresh_provider(provider_id, token):
             consecutive_failures=F('consecutive_failures') + 1,
             refresh_token='', refresh_expires_at=None,
         )
-        logger.warning('Lectura fallida: provider=%s state=%s', status.provider, failure.state)
+        logger.warning('Reading failed: provider=%s state=%s', status.provider, failure.state)

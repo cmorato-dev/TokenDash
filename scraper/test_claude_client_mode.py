@@ -5,6 +5,7 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.utils import translation
 
 from dashboard.models import ProviderStatus
 
@@ -23,7 +24,7 @@ class ClaudeClientModeTests(TestCase):
     @patch('scraper.claude_client_views.client_available', return_value=True)
     @patch('scraper.claude_client_views.client_session_state', return_value={
         'installed': True, 'connected': True, 'method': 'claude.ai', 'checked_at': None,
-        'label': 'Sesión de claude.ai conectada',
+        'label': 'claude.ai session connected',
         'command': 'docker compose exec worker claude auth login',
         'status_command': 'docker compose exec worker claude auth status'})
     @patch('scraper.claude_client_views.enqueue_refresh')
@@ -37,7 +38,7 @@ class ClaudeClientModeTests(TestCase):
     @patch('scraper.claude_client_views.client_available', return_value=True)
     @patch('scraper.claude_client_views.client_session_state', return_value={
         'installed': True, 'connected': False, 'method': 'none', 'checked_at': None,
-        'label': 'Sin sesión iniciada',
+        'label': 'Not signed in',
         'command': 'docker compose exec worker claude auth login',
         'status_command': 'docker compose exec worker claude auth status'})
     @patch('scraper.claude_client_views.enqueue_refresh')
@@ -93,23 +94,23 @@ class ClaudeClientModeTests(TestCase):
 
     @patch('scraper.claude_client_views.client_session_state', return_value={
         'installed': True, 'connected': False, 'method': 'none', 'checked_at': None,
-        'label': 'Sin sesión iniciada',
+        'label': 'Not signed in',
         'command': 'docker compose exec worker claude auth login',
         'status_command': 'docker compose exec worker claude auth status'})
     def test_the_page_names_the_command_when_the_account_is_not_connected(self, session):
         """A friend who deploys the container without keys must find the command."""
         response = self.client.get(reverse('scraper_connect'))
         self.assertContains(response, 'claude auth login')
-        self.assertContains(response, 'Sin sesión iniciada')
+        self.assertContains(response, 'Not signed in')
 
     @patch('scraper.claude_client_views.client_session_state', return_value={
         'installed': True, 'connected': True, 'method': 'claude.ai', 'checked_at': None,
-        'label': 'Sesión de claude.ai conectada',
+        'label': 'claude.ai session connected',
         'command': 'docker compose exec worker claude auth login',
         'status_command': 'docker compose exec worker claude auth status'})
     def test_the_page_confirms_a_connected_session(self, session):
         response = self.client.get(reverse('scraper_connect'))
-        self.assertContains(response, 'Sesión de claude.ai conectada')
+        self.assertContains(response, 'claude.ai session connected')
         # The sign-in guide stays available, folded: the session is already there.
         self.assertContains(response, '<details class="claude-guide">')
         self.assertNotContains(response, '<details class="claude-guide" open>')
@@ -121,6 +122,10 @@ class ClaudeClientModeTests(TestCase):
         ProviderStatus.objects.filter(provider='claude').update(
             client_auth_method='claude.ai', client_auth_checked_at=timezone.now())
         response = self.client.get(reverse('scraper_connect'))
+        self.assertContains(response, 'claude.ai session connected')
+        # Each visitor reads it in their own language.
+        self.addCleanup(translation.activate, 'en')
+        response = self.client.get(reverse('scraper_connect').replace('/en/', '/es/', 1))
         self.assertContains(response, 'Sesión de claude.ai conectada')
 
     def test_the_page_does_not_run_the_client_to_learn_the_session(self):
@@ -143,12 +148,12 @@ class ClaudeClientModeTests(TestCase):
             check.delay.side_effect = ConnectionError()
             response = self.post(action='check')
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertIn('próxima actualización', response.json()['message'])
+        self.assertIn('next automatic refresh', response.json()['message'])
 
     def test_the_page_only_offers_the_current_model(self):
         """The extension, the PC agent and the server browser needed an open browser."""
         body = self.client.get(reverse('scraper_connect')).content.decode()
-        for removed in ('Otras opciones', 'Agente del PC', 'Extensión para Chrome/Edge', 'navegador del servidor'):
+        for removed in ('Other options', 'PC agent', 'Chrome/Edge extension', 'server browser'):
             self.assertNotIn(removed, body)
 
     def test_the_guide_lists_every_command_in_order(self):
@@ -159,7 +164,7 @@ class ClaudeClientModeTests(TestCase):
         positions = [body.index(command) for command in ('cd ~/tokendash', STATUS_COMMAND, LOGIN_COMMAND, CHECK_COMMAND)]
         self.assertEqual(positions, sorted(positions))
         self.assertIn('<details class="claude-guide" open>', body)
-        self.assertIn('docs/VINCULAR_CLAUDE.md', body)
+        self.assertIn('docs/LINK_CLAUDE.md', body)
 
     def test_the_guide_is_folded_once_the_session_is_connected(self):
         ProviderStatus.objects.filter(provider='claude').update(client_auth_method='claude.ai')
@@ -169,9 +174,9 @@ class ClaudeClientModeTests(TestCase):
     def test_only_the_server_way_is_offered_for_claude(self):
         """No alternative mode: the server reads the limits."""
         response = self.client.get(reverse('scraper_connect'))
-        self.assertNotContains(response, 'Volver al modo anterior')
-        self.assertNotContains(response, 'El agente del PC puede consultar los porcentajes')
-        self.assertContains(response, 'Que el servidor consulte los límites de Claude')
+        self.assertNotContains(response, 'Back to the previous mode')
+        self.assertNotContains(response, 'PC agent')
+        self.assertContains(response, 'Let the server read the Claude limits')
 
     def test_the_admin_uses_the_dashboard_colours(self):
         """The admin pages load the dashboard theme."""
@@ -181,34 +186,43 @@ class ClaudeClientModeTests(TestCase):
         self.assertContains(page, 'css/admin-theme')
 
 
-class ClaudeEstadoCommandTests(TestCase):
-    """«python manage.py claude_estado»: the one command run after the sign-in."""
+class ClaudeStatusCommandTests(TestCase):
+    """«python manage.py claude_status»: the one command run after the sign-in."""
 
-    def run_command(self):
+    def run_command(self, name='claude_status'):
         from io import StringIO
         from django.core.management import call_command
         out = StringIO()
-        call_command('claude_estado', stdout=out)
+        call_command(name, stdout=out)
         return out.getvalue()
 
     @patch('scraper.tasks.client_readings')
     @patch('scraper.tasks.publish_client_auth_method', return_value='claude.ai')
-    @patch('scraper.management.commands.claude_estado.publish_client_auth_method', return_value='claude.ai')
+    @patch('scraper.management.commands.claude_status.publish_client_auth_method', return_value='claude.ai')
     def test_it_activates_the_mode_and_saves_a_reading(self, published, _, readings):
+        from datetime import datetime, timezone as dt_timezone
         from decimal import Decimal
+        from django.utils import translation
         from scraper.quotas import QuotaReading
-        readings.return_value = [QuotaReading('session', 'Sesión de 5 horas', Decimal('4.00'), 'Se reinicia el 21/10 a las 14:19'),
-                                 QuotaReading('weekly_all', 'Semana · todos los modelos', Decimal('65.00'), '')]
+        resets_at = datetime(2026, 10, 21, 12, 19, tzinfo=dt_timezone.utc).isoformat()
+        readings.return_value = [QuotaReading('session', '5-hour session', Decimal('4.00'), '', resets_at),
+                                 QuotaReading('weekly_all', 'Week · all models', Decimal('65.00'), '')]
         ProviderStatus.objects.filter(provider='claude').update(collection_mode='none')
         output = self.run_command()
         status = ProviderStatus.objects.get(provider='claude')
         self.assertEqual(status.collection_mode, 'client')
         self.assertEqual(status.state, ProviderStatus.State.OK)
+        self.assertIn('5-hour session: 4 % used · Resets on Oct 21 at 14:19', output)
+        self.assertIn('Week · all models: 65 % used', output)
+        self.assertIn('Claude quota updated on the dashboard', output)
+        # With LANGUAGE_CODE=es the console speaks Spanish; the old Spanish name still works.
+        ProviderStatus.objects.filter(provider='claude').update(last_attempt_at=None)
+        with translation.override('es'):
+            output = self.run_command('claude_estado')
         self.assertIn('Sesión de 5 horas: 4 % consumido · Se reinicia el 21/10 a las 14:19', output)
-        self.assertIn('Semana · todos los modelos: 65 % consumido', output)
         self.assertIn('Cuota de Claude actualizada en el dashboard', output)
 
-    @patch('scraper.management.commands.claude_estado.publish_client_auth_method', return_value='none')
+    @patch('scraper.management.commands.claude_status.publish_client_auth_method', return_value='none')
     def test_without_a_session_it_names_the_login_command(self, _):
         from django.core.management.base import CommandError
         from scraper.claude_client import LOGIN_COMMAND
@@ -219,10 +233,10 @@ class ClaudeEstadoCommandTests(TestCase):
 
     @patch('scraper.tasks.client_readings', side_effect=RuntimeError('raw client output'))
     @patch('scraper.tasks.publish_client_auth_method', return_value='claude.ai')
-    @patch('scraper.management.commands.claude_estado.publish_client_auth_method', return_value='claude.ai')
+    @patch('scraper.management.commands.claude_status.publish_client_auth_method', return_value='claude.ai')
     def test_a_failed_read_is_reported_without_raw_output(self, *_):
         from django.core.management.base import CommandError
         with self.assertRaises(CommandError) as raised:
             self.run_command()
-        self.assertIn('No se ha podido leer la cuota', str(raised.exception))
+        self.assertIn('The quota could not be read', str(raised.exception))
         self.assertNotIn('raw client output', str(raised.exception))

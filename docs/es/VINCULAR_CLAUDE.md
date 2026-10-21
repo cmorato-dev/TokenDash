@@ -1,5 +1,7 @@
 # Vincular Claude con el servidor, paso a paso
 
+[English](../LINK_CLAUDE.md) · **Español**
+
 Se hace **una sola vez**: después el servidor lee la cuota de Claude periódicamente (cada 20 minutos por defecto) sin que nadie tenga el navegador ni el PC encendidos. Solo se repite si la sesión caduca o si se cierra sesión en claude.ai desde todos los dispositivos.
 
 Necesitas una suscripción de Claude (Pro o Max). TokenDash usa el cliente oficial de Claude Code, que ya viene dentro de TokenDash: no tienes que instalar nada.
@@ -73,10 +75,10 @@ Pega el código en el terminal que estaba esperando y pulsa **Enter**. Debe apar
 ## Paso 6 · Comprobar y activar
 
 ```bash
-docker compose exec worker python manage.py claude_estado
+docker compose exec worker python manage.py claude_status
 ```
 
-Este comando comprueba la sesión, deja activada la lectura de la cuota en el servidor y la actualiza en ese momento. La salida correcta se parece a esta (los números y las fechas cambian):
+Este comando comprueba la sesión, deja activada la lectura de la cuota en el servidor y la actualiza en ese momento. La salida correcta se parece a esta (los números y las fechas cambian). Sale en inglés salvo que tengas `LANGUAGE_CODE=es` en el `.env`; entonces sale en español:
 
 ```text
 Sesión de Claude en el servidor: Sesión de claude.ai conectada
@@ -85,7 +87,9 @@ Sesión de Claude en el servidor: Sesión de claude.ai conectada
 Cuota de Claude actualizada en el dashboard (21/10 14:05).
 ```
 
-Si termina con `Inicia la sesión con: …`, vuelve al paso 3.
+Si termina con `Inicia la sesión con: …` (en inglés, `Sign in with: …`), vuelve al paso 3.
+
+> Las guías antiguas llamaban a este comando `claude_estado`. Sigue funcionando.
 
 ## Paso 7 · Mirar el dashboard
 
@@ -103,7 +107,7 @@ Ya está. No hace falta tocar nada más: el servidor renueva la sesión y la lec
 | `service "worker" is not running` | Los contenedores están parados | `docker compose up -d` y repetir |
 | `"authMethod": "oauth_token"` | Hay `CLAUDE_CODE_OAUTH_TOKEN` en el `.env` | Borrar esa línea del `.env`, ejecutar `docker compose up -d worker` y repetir desde el paso 3 |
 | El código no se acepta | Se pegó con la dirección, o caducó | Repetir desde el paso 3 y pegar solo el código |
-| `No se ha podido leer la cuota` con la sesión conectada | El plan de la cuenta no publica cuotas o el cliente cambió | Comprobar el plan en claude.ai; el dashboard conserva la última lectura válida |
+| `No se ha podido leer la cuota` (`The quota could not be read`) con la sesión conectada | El plan de la cuenta no publica cuotas o el cliente cambió | Comprobar el plan en claude.ai; el dashboard conserva la última lectura válida |
 
 **No uses `claude setup-token`.** Ese token solo permite enviar mensajes al modelo; Anthropic no le deja leer la cuota.
 

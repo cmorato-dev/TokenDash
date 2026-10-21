@@ -1,5 +1,7 @@
 # Mantenimiento
 
+[English](../MAINTENANCE.md) · **Español**
+
 Todos los comandos se ejecutan en la carpeta de TokenDash, la que contiene `docker-compose.yml`, por ejemplo después de `cd ~/tokendash`. En Windows, abre ahí PowerShell («Abrir en Terminal»).
 
 ## Ver cómo está
@@ -156,6 +158,7 @@ La frecuencia de actualización se cambia en el panel: **Administración → Aju
 | Variable | Para qué | Por defecto |
 |---|---|---|
 | `TIME_ZONE` | Zona horaria de las fechas (`America/Mexico_City`, `America/Argentina/Buenos_Aires`…) | `Europe/Madrid` |
+| `LANGUAGE_CODE` | Idioma de los mensajes de la consola y de las páginas cuando el navegador no pide ni español ni inglés: `es` o `en` | `en` |
 | `WEB_BIND` | `0.0.0.0` para abrirlo desde la red; sin ella, solo desde el propio equipo | solo el equipo |
 
 Después de cambiar algo, ejecuta `docker compose up -d`.

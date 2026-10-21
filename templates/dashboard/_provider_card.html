@@ -1,3 +1,4 @@
+{% load i18n %}
 {# One provider's card: the dashboard and the Home Assistant module share it. #}
 <article class="panel provider-card{% if wide %} wide{% endif %}" data-provider="{{ provider.provider }}" data-refresh-url="{% url 'provider-refresh' provider.provider %}">
   <div class="flex items-center justify-between gap-3">
@@ -5,14 +6,14 @@
     <span class="badge state">{{ provider.get_state_display }}</span>
   </div>
   <div class="gauge-row my-8 flex items-center gap-7">
-    <div class="gauge" role="meter" aria-label="Porcentaje de cuota disponible" aria-valuemin="0" aria-valuemax="100"><div><strong class="available">—</strong><span>disponible</span></div></div>
-    <div><p class="quota-label text-sm text-slate-400">Sin lectura confirmada</p><p class="mt-2 text-2xl font-semibold"><span class="used">—</span><span class="text-sm font-normal text-slate-400"> consumido</span></p><p class="reset mt-2 text-xs text-slate-400"></p><p class="level-note mt-2" role="status"></p></div>
+    <div class="gauge" role="meter" aria-label="{% translate 'Share of the quota available' %}" aria-valuemin="0" aria-valuemax="100"><div><strong class="available">—</strong><span>{% translate "available" %}</span></div></div>
+    <div><p class="quota-label text-sm text-slate-400">{% translate "No confirmed reading" %}</p><p class="mt-2 text-2xl font-semibold"><span class="used">—</span><span class="text-sm font-normal text-slate-400"> {% translate "used" %}</span></p><p class="reset mt-2 text-xs text-slate-400"></p><p class="level-note mt-2" role="status"></p></div>
   </div>
   <div class="extra-quotas mb-5 grid gap-3 text-sm text-slate-400"></div>
   <p class="hint mb-4 text-sm text-slate-400"></p>
   <p class="error mb-4 text-sm text-amber-300" role="status"></p>
   <div class="flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-5">
-    <div class="text-xs text-slate-500">Último dato válido<br><time class="updated mt-1 block text-slate-300">Nunca</time><span class="attempt mt-1 block"></span></div>
-    {% if user.is_staff and not embed %}<button class="action refresh" type="button" hidden>↻ &nbsp; Actualizar ahora</button>{% endif %}
+    <div class="text-xs text-slate-500">{% translate "Last valid reading" %}<br><time class="updated mt-1 block text-slate-300">{% translate "Never" %}</time><span class="attempt mt-1 block"></span></div>
+    {% if user.is_staff and not embed %}<button class="action refresh" type="button" hidden>↻ &nbsp; {% translate "Refresh now" %}</button>{% endif %}
   </div>
 </article>

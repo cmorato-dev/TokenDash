@@ -1,0 +1,176 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-21 18:03+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: static/js/accounts.js:8
+msgid "Sign in to the administration again."
+msgstr "Vuelve a iniciar sesión en el administrador."
+
+#: static/js/accounts.js:10
+msgid "The action could not be completed."
+msgstr "No se pudo completar la acción."
+
+#: static/js/accounts.js:39
+msgid "Disconnect ChatGPT? The credential stored in TokenDash will be deleted."
+msgstr "¿Desconectar ChatGPT? Se borrará la credencial guardada en TokenDash."
+
+#: static/js/accounts.js:79
+msgid "Copied"
+msgstr "Copiado"
+
+#: static/js/accounts.js:95
+msgid "Link Claude with the TokenDash server (only once)"
+msgstr "Vincular Claude con el servidor TokenDash (una sola vez)"
+
+#: static/js/accounts.js:95
+msgid "Do not use \"claude setup-token\": it cannot read the quota."
+msgstr "No usar «claude setup-token»: no puede leer la cuota."
+
+#: static/js/dashboard.js:13
+msgid "in this 5-hour session"
+msgstr "en esta sesión de 5 horas"
+
+#: static/js/dashboard.js:13
+msgid "this week"
+msgstr "esta semana"
+
+#: static/js/dashboard.js:13
+msgid "this week with Sonnet"
+msgstr "esta semana con Sonnet"
+
+#: static/js/dashboard.js:13
+msgid "this month"
+msgstr "este mes"
+
+#: static/js/dashboard.js:15
+msgid "in “%(label)s”"
+msgstr "en «%(label)s»"
+
+#: static/js/dashboard.js:18
+msgid "You had used %(percent)s of the limit %(period)s. It has already renewed."
+msgstr "Llevabas un %(percent)s del límite %(period)s. Ya se ha renovado."
+
+#: static/js/dashboard.js:21
+msgid "It renews on %(day)s at %(time)s."
+msgstr "Se renueva el %(day)s a las %(time)s."
+
+#: static/js/dashboard.js:22
+msgid "You have used %(percent)s of the limit %(period)s."
+msgstr "Llevas un %(percent)s del límite %(period)s."
+
+#: static/js/dashboard.js:27
+msgid "You are past half of the limit."
+msgstr "Has pasado de la mitad del límite."
+
+#: static/js/dashboard.js:27
+#, javascript-format
+msgid "Little left: you are past 80% of the limit."
+msgstr "Te queda poco: has pasado del 80 % del límite."
+
+#: static/js/dashboard.js:37
+msgid "The key is missing: add #key=… at the end of the module address."
+msgstr "Falta la clave: añade #key=… al final de la dirección del módulo."
+
+#: static/js/dashboard.js:44
+msgid "No connection with the TokenDash server. It will be retried in a few seconds."
+msgstr "No hay conexión con el servidor de TokenDash. Se reintentará en unos segundos."
+
+#: static/js/dashboard.js:46
+msgid "Sign in again."
+msgstr "Inicia sesión de nuevo."
+
+#: static/js/dashboard.js:49
+msgid "The TokenDash server did not answer properly (error %(status)s). It may be restarting; it will be retried in a few seconds."
+msgstr "El servidor de TokenDash no ha respondido bien (error %(status)s). Puede que se esté reiniciando; se reintentará en unos segundos."
+
+#: static/js/dashboard.js:52
+msgid "The request could not be completed."
+msgstr "No se pudo completar la solicitud."
+
+#: static/js/dashboard.js:67
+msgid "No confirmed reading"
+msgstr "Sin lectura confirmada"
+
+#: static/js/dashboard.js:68
+msgid "Refreshing…"
+msgstr "Actualizando…"
+
+#: static/js/dashboard.js:70
+msgid "Never"
+msgstr "Nunca"
+
+#: static/js/dashboard.js:71
+msgid "Last attempt: %(when)s"
+msgstr "Último intento: %(when)s"
+
+#: static/js/dashboard.js:74
+msgid "The window has restarted since this reading"
+msgstr "La ventana se ha reiniciado desde esta lectura"
+
+#: static/js/dashboard.js:107
+msgid "session / 5 h"
+msgstr "sesión / 5 h"
+
+#: static/js/dashboard.js:107
+msgid "week"
+msgstr "semana"
+
+#: static/js/dashboard.js:107
+msgid "week · Sonnet"
+msgstr "semana · Sonnet"
+
+#: static/js/dashboard.js:107
+msgid "month"
+msgstr "mes"
+
+#: static/js/dashboard.js:111
+msgid "Daily average"
+msgstr "Media diaria"
+
+#: static/js/dashboard.js:111
+msgid "Weekly average"
+msgstr "Media por semana"
+
+#: static/js/dashboard.js:111
+msgid "Monthly average"
+msgstr "Media por mes"
+
+#: static/js/dashboard.js:111
+msgid "Yearly average"
+msgstr "Media por año"
+
+#: static/js/dashboard.js:115
+msgid "wk %(date)s"
+msgstr "sem. %(date)s"
+
+#: static/js/dashboard.js:124
+msgid "week of %(date)s"
+msgstr "semana del %(date)s"
+
+#: static/js/dashboard.js:141
+msgid "%(average)s of the percentage observed per quota."
+msgstr "%(average)s del porcentaje observado por cuota."
+
+#: static/js/dashboard.js:144
+msgid "The history will appear after the first confirmed reading."
+msgstr "El histórico aparecerá tras la primera lectura confirmada."
+
+#: static/js/dashboard.js:149
+msgid "Average usage, from 0 to 100 percent"
+msgstr "Media del consumo, de 0 a 100 por ciento"

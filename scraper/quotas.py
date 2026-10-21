@@ -1,20 +1,26 @@
 """Shared quota value objects: no provider endpoints.
 
 The Codex reader and the official Claude client build the same readings here.
+Labels and failure messages are stored in English and translated when they are
+shown (display_quota, and gettext on ProviderStatus.last_error), so each visitor
+reads them in their own language.
 """
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone as dt_timezone
 from decimal import Decimal, InvalidOperation
 
 from django.utils import formats, timezone
+from django.utils.translation import gettext as _, gettext_noop, pgettext
 
 # Claude publishes these two windows for Pro/Max subscriptions.
-CLAUDE_WINDOWS = {'five_hour': ('session', 'Sesión de 5 horas'), 'seven_day': ('weekly_all', 'Semana · todos los modelos')}
+CLAUDE_WINDOWS = {'five_hour': ('session', gettext_noop('5-hour session')), 'seven_day': ('weekly_all', gettext_noop('Week · all models'))}
+CODEX_HOURS = re.compile(r'Codex · (\d+) h window')
 
 
 class ScrapeFailure(Exception):
     state = 'error'
-    message = 'No se pudo actualizar. Revisar conexión y configuración.'
+    message = gettext_noop('Could not refresh. Check the connection and the settings.')
 
     def __init__(self, message=None):
         # A subclass may pass a more specific reason. Without this, the instance
@@ -26,17 +32,17 @@ class ScrapeFailure(Exception):
 
 class SessionExpired(ScrapeFailure):
     state = 'expired'
-    message = 'Sesión expirada o ausente, reautenticar.'
+    message = gettext_noop('Session expired or missing, sign in again.')
 
 
 class VerificationRequired(ScrapeFailure):
     state = 'blocked'
-    message = 'El proveedor requiere una verificación manual en el navegador.'
+    message = gettext_noop('The provider asks for a manual verification in the browser.')
 
 
 class QuotaUnavailable(ScrapeFailure):
     state = 'unavailable'
-    message = 'No hemos encontrado un porcentaje de cuota reconocible. Comprueba la conexión en «Conectar cuentas»; es posible que tu plan no publique esta métrica.'
+    message = gettext_noop('No recognisable quota percentage was found. Check the connection in "Connect accounts"; your plan may not publish this metric.')
 
 
 @dataclass(frozen=True)
@@ -68,18 +74,40 @@ def quota_reading(key, label, used, resets_epoch=None):
     if isinstance(resets_epoch, (int, float)) and not isinstance(resets_epoch, bool) and resets_epoch > 0:
         moment = datetime.fromtimestamp(resets_epoch, dt_timezone.utc)
         resets_at = moment.isoformat()
-        reset_text = 'Se reinicia el ' + formats.date_format(timezone.localtime(moment), 'j/n \\a \\l\\a\\s H:i')
+        reset_text = reset_sentence(moment)
     return QuotaReading(key, label, percent.quantize(Decimal('0.01')), reset_text, resets_at)
 
 
+def reset_sentence(moment):
+    """«Resets on Oct 27 at 07:41», in the active language and the local time zone."""
+    local = timezone.localtime(moment)
+    return _('Resets on %(day)s at %(time)s') % {
+        'day': formats.date_format(local, pgettext('day and month of a reset', 'M j')),
+        'time': formats.date_format(local, 'H:i')}
+
+
+def display_quota(quota):
+    """A stored quota with its label and reset sentence in the active language."""
+    quota = dict(quota)
+    label = quota.get('label') or ''
+    hours = CODEX_HOURS.fullmatch(label)
+    quota['label'] = _('Codex · %(hours)s h window') % {'hours': hours[1]} if hours else (_(label) if label else '')
+    try:
+        quota['reset_text'] = reset_sentence(datetime.fromisoformat(quota['resets_at']))
+    except (KeyError, TypeError, ValueError):
+        quota['reset_text'] = quota.get('reset_text') or ''
+    return quota
+
+
 def window_key(minutes):
+    # Kept in English: display_quota translates them, «Codex · N h window» included.
     if minutes <= 6 * 60:
-        return 'session', f'Codex · ventana de {round(minutes / 60)} h' if minutes != 300 else 'Codex · ventana de 5 h'
+        return 'session', f'Codex · {round(minutes / 60)} h window'
     if 6 * 24 * 60 <= minutes <= 8 * 24 * 60:
-        return 'weekly', 'Codex · semana'
+        return 'weekly', gettext_noop('Codex · week')
     if minutes >= 28 * 24 * 60:
-        return 'monthly', 'Codex · mes'
-    return f'window_{int(minutes)}m', f'Codex · ventana de {round(minutes / 60)} h'
+        return 'monthly', gettext_noop('Codex · month')
+    return f'window_{int(minutes)}m', f'Codex · {round(minutes / 60)} h window'
 
 
 def readings_from_windows(windows):

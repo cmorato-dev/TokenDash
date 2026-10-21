@@ -15,7 +15,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-tokendash}
       POSTGRES_USER: ${POSTGRES_USER:-tokendash}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -38,7 +38,7 @@ services:
   migrate:
     <<: *app
     # Applies the migrations and, on a new installation only, creates the user admin / tokendash.
-    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py crear_admin_inicial"]
+    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py create_initial_admin"]
     restart: "no"
     depends_on:
       db:
@@ -53,7 +53,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/accounts/login/')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/en/accounts/login/')"]
       interval: 30s
       timeout: 5s
       retries: 3

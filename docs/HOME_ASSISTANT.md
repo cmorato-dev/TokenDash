@@ -1,108 +1,114 @@
-# TokenDash en Home Assistant
+# TokenDash in Home Assistant
 
-En todas las direcciones, `SERVIDOR` es la IP del equipo de TokenDash (por ejemplo `192.168.1.50`) y `CLAVE` la clave que crearás en el paso 1.
+**English** · [Español](es/HOME_ASSISTANT.md)
 
-TokenDash ofrece tres módulos independientes. Puedes añadir en Home Assistant uno, dos o los tres, cada uno en su propia tarjeta:
+In every address, `SERVER` is the IP address of the TokenDash computer (for example `192.168.1.50`) and `KEY` the key you will create in step 1.
 
-| Módulo | Dirección |
+TokenDash offers three independent modules. You can add one, two or all three to Home Assistant, each on its own card:
+
+| Module | Address |
 |---|---|
-| ChatGPT | `http://SERVIDOR:8000/ha/chatgpt/#clave=CLAVE` |
-| Claude | `http://SERVIDOR:8000/ha/claude/#clave=CLAVE` |
-| Evolución de los límites | `http://SERVIDOR:8000/ha/grafica/#clave=CLAVE` |
+| ChatGPT | `http://SERVER:8000/en/ha/chatgpt/#key=KEY` |
+| Claude | `http://SERVER:8000/en/ha/claude/#key=KEY` |
+| Limits over time | `http://SERVER:8000/en/ha/chart/#key=KEY` |
 
-Cada módulo se actualiza solo. Las tarjetas cada 30 segundos y la gráfica cada 10 minutos. La gráfica abre en 7 días. Para otro periodo, añade `?dias=` antes del `#`, por ejemplo `/ha/grafica/?dias=30#clave=CLAVE`. Valen 7, 30, 90, 182, 365 y 1825.
+The `/en/` in the address is the module's language; with `/es/` it appears in Spanish.
 
-Si prefieres entidades propias de Home Assistant, para automatizaciones, historial o tarjetas nativas, cada proveedor tiene además su sensor. Están en la sección 4.
+Each module refreshes itself: the cards every 30 seconds and the chart every 10 minutes. The chart opens on 7 days. For another period, add `?days=` before the `#`, for example `/en/ha/chart/?days=30#key=KEY`. 7, 30, 90, 182, 365 and 1825 are valid.
 
-## 1. Crear la clave
+> **Already have modules with addresses like `/ha/grafica/?dias=30#clave=…`?** They keep working with no changes, in the language of Home Assistant's browser.
 
-1. En TokenDash, entra en **Administración → Claves de Home Assistant → Añadir**.
-2. Ponle un nombre, por ejemplo «Home Assistant de casa», y guarda.
-3. La página siguiente muestra la clave y las direcciones de los tres módulos, ya completas. **Cópialas en ese momento: la clave no se vuelve a mostrar.** TokenDash solo guarda su huella SHA-256.
+If you prefer Home Assistant entities of your own, for automations, history or native cards, each provider also has its sensor. They are in section 4.
 
-La clave solo sirve para **leer** los límites. No puede pulsar «Actualizar ahora», conectar cuentas ni entrar en la administración.
+## 1. Create the key
 
-- **Si se pierde o se filtra:** borra la clave en el administrador y crea otra.
-- **Para saber si se usa:** la columna «último uso» indica si Home Assistant la está usando.
+1. In TokenDash, open **Administration → Home Assistant keys → Add**.
+2. Give it a name, for example "Home Assistant at home", and save.
+3. The next page shows the key and the addresses of the three modules, already complete. **Copy them then: the key is not shown again.** TokenDash only stores its SHA-256 fingerprint.
 
-La clave va detrás de `#` en las direcciones de los módulos. El navegador no envía esa parte al servidor, así que la clave no aparece en sus registros. La página la pasa a la API en una cabecera.
+The key can only **read** the limits. It cannot press "Refresh now", connect accounts or open the administration.
 
-## 2. Que Home Assistant llegue al servidor
+- **If it is lost or leaked:** delete the key in the administration and create another one.
+- **To know whether it is used:** the "last used" column tells whether Home Assistant is using it.
 
-Si al instalar pasaste la IP a `init_env.py`, TokenDash ya se ve desde la red: prueba a abrir `http://SERVIDOR:8000` desde otro equipo. Si no, sigue [Ver TokenDash desde otros equipos](MANTENIMIENTO.md#ver-tokendash-desde-otros-equipos).
+The key goes after the `#` in the module addresses. The browser does not send that part to the server, so the key does not appear in its logs. The page passes it to the API in a header.
 
-- **Si abres Home Assistant por HTTPS** (por ejemplo, con Nabu Casa o un proxy): el navegador bloquea una tarjeta que cargue una página `http://` («contenido mixto»). En ese caso TokenDash tiene que servirse también por HTTPS, con un proxy: ver [Mantenimiento → HTTPS](MANTENIMIENTO.md#https).
-- **Si lo abres por `http://` en la red local:** basta con la dirección `http://`.
-- **Sensores:** no tienen esta limitación, porque los consulta el servidor de Home Assistant y no el navegador.
+## 2. Let Home Assistant reach the server
 
-## 3. Tarjetas «Página web»
+If you gave the IP address to `init_env.py` when installing, TokenDash can already be seen from the network: try opening `http://SERVER:8000` from another device. If not, follow [Open TokenDash from other devices](MAINTENANCE.md#open-tokendash-from-other-devices).
 
-En un panel de Home Assistant:
+- **If you open Home Assistant over HTTPS** (for example with Nabu Casa or a proxy): the browser blocks a card that loads an `http://` page ("mixed content"). In that case TokenDash also has to be served over HTTPS, through a proxy: see [Maintenance → HTTPS](MAINTENANCE.md#https).
+- **If you open it over `http://` on the local network:** the `http://` address is enough.
+- **Sensors:** they do not have this limitation, because Home Assistant's server reads them, not the browser.
 
-1. Pulsa **Editar → Añadir tarjeta → Página web**.
-2. Pega la dirección de un módulo.
-3. Repite con cada módulo que quieras.
+## 3. "Webpage" cards
 
-En YAML:
+On a Home Assistant dashboard:
+
+1. Press **Edit → Add card → Webpage**.
+2. Paste the address of a module.
+3. Repeat for every module you want.
+
+In YAML:
 
 ```yaml
 type: iframe
-url: http://SERVIDOR:8000/ha/claude/#clave=CLAVE
+url: http://SERVER:8000/en/ha/claude/#key=KEY
 aspect_ratio: 95%
 ```
 
-`aspect_ratio` fija el alto de la tarjeta en proporción a su ancho. Valores orientativos:
+`aspect_ratio` sets the card's height in proportion to its width. Suggested values:
 
-| Módulo | `aspect_ratio` |
+| Module | `aspect_ratio` |
 |---|---|
-| Tarjetas de ChatGPT y Claude | entre `90%` y `100%` |
-| Gráfica en una columna ancha | `55%` |
-| Gráfica en una columna estrecha | `110%` |
+| ChatGPT and Claude cards | between `90%` and `100%` |
+| Chart in a wide column | `55%` |
+| Chart in a narrow column | `110%` |
 
-El módulo ocupa todo el ancho de la tarjeta y tiene fondo transparente.
+The module takes the full width of the card and has a transparent background.
 
-## 4. Sensores (opcional)
+## 4. Sensors (optional)
 
-Cada proveedor tiene su propia dirección. Se puede integrar uno sin el otro:
+Each provider has its own address. One can be added without the other:
 
-- `http://SERVIDOR:8000/api/ha/chatgpt/`
-- `http://SERVIDOR:8000/api/ha/claude/`
+- `http://SERVER:8000/api/ha/chatgpt/`
+- `http://SERVER:8000/api/ha/claude/`
 
-Ambas se piden con la cabecera `Authorization: Bearer CLAVE` y devuelven:
+Both are requested with the `Authorization: Bearer KEY` header and return the fields below. `state_label` comes in the language of the `Accept-Language` header (English without it); the rest are numbers and dates:
 
-| Campo | Contenido |
+| Field | Content |
 |---|---|
-| `session_used_percent`, `session_resets_at` | Ventana de 5 horas: % consumido e instante de reinicio |
-| `weekly_used_percent`, `weekly_resets_at` | Ventana semanal |
-| `session_window_reset`, `weekly_window_reset` | `true` si la ventana se reinició después de la lectura: el valor es el último conocido, no el actual |
-| `state`, `state_label` | Estado de la lectura (`ok`, `expired`, `unavailable`…) |
-| `last_success_at`, `last_attempt_at` | Último dato válido y último intento |
+| `session_used_percent`, `session_resets_at` | 5-hour window: % used and reset time |
+| `weekly_used_percent`, `weekly_resets_at` | Weekly window |
+| `session_window_reset`, `weekly_window_reset` | `true` if the window restarted after the reading: the value is the last known one, not the current one |
+| `state`, `state_label` | State of the reading (`ok`, `expired`, `unavailable`…) |
+| `last_success_at`, `last_attempt_at` | Last valid reading and last attempt |
 
-Una ventana sin dato vale `null`, nunca 0. «Sin datos» no significa 0 % consumido.
+A window with no data is `null`, never 0. "No data" does not mean 0 % used.
 
-Primero guarda la clave en `secrets.yaml`, con la palabra `Bearer` delante:
+First store the key in `secrets.yaml`, with the word `Bearer` in front:
 
 ```yaml
-tokendash_auth: "Bearer CLAVE"
+tokendash_auth: "Bearer KEY"
 ```
 
-Después, en `configuration.yaml`, añade un bloque por proveedor. Este es el de Claude; para ChatGPT, copia el bloque y cambia `claude` por `chatgpt`:
+Then, in `configuration.yaml`, add one block per provider. This one is for Claude; for ChatGPT, copy the block and replace `claude` with `chatgpt`:
 
 ```yaml
 rest:
-  - resource: http://SERVIDOR:8000/api/ha/claude/
+  - resource: http://SERVER:8000/api/ha/claude/
     headers:
       Authorization: !secret tokendash_auth
     scan_interval: 300
     sensor:
-      - name: "Claude · sesión 5 h"
+      - name: "Claude · 5 h session"
         unique_id: tokendash_claude_session
         unit_of_measurement: "%"
         state_class: measurement
         value_template: "{{ value_json.session_used_percent }}"
         availability: "{{ value_json.session_used_percent is not none }}"
         json_attributes: [session_resets_at, session_window_reset, state, last_success_at]
-      - name: "Claude · semana"
+      - name: "Claude · week"
         unique_id: tokendash_claude_weekly
         unit_of_measurement: "%"
         state_class: measurement
@@ -111,4 +117,4 @@ rest:
         json_attributes: [weekly_resets_at, weekly_window_reset, state, last_success_at]
 ```
 
-TokenDash consulta los proveedores con la frecuencia de **Administración → Ajustes**, cada 20 minutos por defecto. Un `scan_interval` de 300 segundos basta.
+TokenDash reads the providers as often as set in **Administration → Settings**, every 20 minutes by default. A `scan_interval` of 300 seconds is enough.

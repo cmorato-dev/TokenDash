@@ -19,14 +19,14 @@ RUN set -eu; \
     case "${TARGETARCH}" in \
       amd64) platform=linux-x64 ;; \
       arm64) platform=linux-arm64 ;; \
-      *) echo "Arquitectura no soportada: ${TARGETARCH}" >&2; exit 1 ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
     esac; \
     base="https://downloads.claude.ai/claude-code-releases/${CLAUDE_CODE_VERSION}"; \
     curl -fsSL "${base}/manifest.json" -o /tmp/manifest.json; \
     curl -fsSL "${base}/${platform}/claude" -o /tmp/claude; \
     expected="$(python3 -c "import json,sys; print(json.load(open('/tmp/manifest.json'))['platforms']['${platform}']['checksum'])")"; \
     actual="$(sha256sum /tmp/claude | cut -d' ' -f1)"; \
-    if [ "${expected}" != "${actual}" ]; then echo "La suma del binario no coincide con el manifiesto firmado" >&2; exit 1; fi; \
+    if [ "${expected}" != "${actual}" ]; then echo "The binary checksum does not match the signed manifest" >&2; exit 1; fi; \
     mkdir -p /opt/claude/bin && mv /tmp/claude /opt/claude/bin/claude && chmod 0755 /opt/claude/bin/claude; \
     /opt/claude/bin/claude --version
 

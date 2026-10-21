@@ -7,9 +7,10 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 from .models import IntegrationKey, ProviderStatus, RefreshSettings, UsageLog
 from scraper.models import ProviderCredential
+from scraper.quotas import QuotaUnavailable
 
 @override_settings(STORAGES={'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
 class DashboardTests(TestCase):
@@ -21,13 +22,13 @@ class DashboardTests(TestCase):
         self.credential = ProviderCredential.objects.create(provider=self.provider, secret='not-a-real-secret')
 
     def test_login_required_and_dashboard_renders(self):
-        self.assertEqual(self.client.get('/').status_code, 302)
+        self.assertEqual(self.client.get(reverse('dashboard')).status_code, 302)
         self.assertEqual(self.client.get(reverse('provider-status')).status_code, 302)
         self.client.force_login(self.user)
-        response = self.client.get('/')
+        response = self.client.get(reverse('dashboard'))
         self.assertContains(response, 'ChatGPT')
         self.assertContains(response, 'Claude')
-        self.assertContains(response, 'Actualizar ahora')
+        self.assertContains(response, 'Refresh now')
 
     def test_no_data_is_not_zero(self):
         self.client.force_login(self.user)
@@ -57,7 +58,7 @@ class DashboardTests(TestCase):
         client.force_login(self.user)
         response = client.post(reverse('provider-refresh', args=['chatgpt']))
         self.assertEqual(response.status_code, 403)
-        self.assertIn('Recárgala', response.json()['error'])
+        self.assertIn('Reload it', response.json()['error'])
         self.assertEqual(client.post(reverse('login')).headers['Content-Type'], 'text/html; charset=utf-8')
 
     @patch('dashboard.views.enqueue_refresh', side_effect=ConnectionError('private-broker-host'))
@@ -164,7 +165,7 @@ class HomeAssistantTests(TestCase):
         self.assertTrue(self.key.startswith(self.record.prefix))
 
     def test_each_module_has_its_own_page_that_can_be_framed(self):
-        for module, text in [('chatgpt', 'ChatGPT'), ('claude', 'Claude'), ('grafica', 'Evolución de los límites')]:
+        for module, text in [('chatgpt', 'ChatGPT'), ('claude', 'Claude'), ('chart', 'Limits over time'), ('grafica', 'Limits over time')]:
             response = self.client.get(reverse('embed', args=[module]))
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, text)
@@ -173,8 +174,16 @@ class HomeAssistantTests(TestCase):
         response = self.client.get(reverse('embed', args=['chatgpt']))
         self.assertNotContains(response, 'data-provider="claude"')
         self.assertNotContains(response, 'id="history"')
-        self.assertNotContains(response, 'Actualizar ahora')
+        self.assertNotContains(response, 'Refresh now')
         self.assertEqual(self.client.get(reverse('embed', args=['otro'])).status_code, 404)
+
+    def test_modules_created_before_the_language_prefix_still_work(self):
+        # Home Assistant cards made with /ha/grafica/#clave=… keep their address.
+        self.addCleanup(translation.activate, 'en')  # a Spanish request leaves Spanish active
+        response = self.client.get('/ha/grafica/', HTTP_ACCEPT_LANGUAGE='es')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Evolución de los límites')
+        self.assertNotIn('X-Frame-Options', response.headers)
 
     def test_the_rest_of_the_site_still_refuses_frames(self):
         self.assertEqual(self.client.get(reverse('login')).headers['X-Frame-Options'], 'DENY')
@@ -218,7 +227,7 @@ class HomeAssistantTests(TestCase):
         created = IntegrationKey.objects.get(name='Salón')
         key = response.context['key']
         self.assertEqual(IntegrationKey.digest(key), created.key_hash)
-        self.assertContains(response, f'/ha/grafica/#clave={key}')
+        self.assertContains(response, f'/en/ha/chart/#key={key}')
         self.assertIn('no-store', response.headers['Cache-Control'])
         page = self.client.get(reverse('admin:dashboard_integrationkey_change', args=[created.pk]))
         self.assertNotContains(page, key)
@@ -227,50 +236,50 @@ class HomeAssistantTests(TestCase):
         admin = get_user_model().objects.create_superuser('admin', password='test-password')
         self.client.force_login(admin)
         page = self.client.get(reverse('admin:index'))
-        self.assertContains(page, 'Usuarios')
-        self.assertNotContains(page, 'Grupos')
-        self.assertNotContains(page, 'Tareas periódicas')
+        self.assertContains(page, 'Users')
+        self.assertNotContains(page, 'Groups')
+        self.assertNotContains(page, 'Periodic tasks')
 
 
 class FirstSignInTests(TestCase):
     """A new installation starts with admin / tokendash and forces a new password."""
 
     def setUp(self):
-        call_command('crear_admin_inicial', stdout=StringIO())
+        call_command('create_initial_admin', stdout=StringIO())
 
     def test_default_admin_only_on_empty_installation(self):
         admin = get_user_model().objects.get()
         self.assertEqual(admin.username, 'admin')
         self.assertTrue(admin.is_superuser and admin.is_staff)
-        call_command('crear_admin_inicial', stdout=StringIO())
+        call_command('create_initial_admin', stdout=StringIO())
         self.assertEqual(get_user_model().objects.count(), 1)
 
     def test_default_password_is_forced_to_change(self):
         self.client.post(reverse('login'), {'username': 'admin', 'password': 'tokendash'})
-        for url in ('/', '/admin/', reverse('scraper_connect')):
+        for url in (reverse('dashboard'), reverse('admin:index'), reverse('scraper_connect')):
             self.assertRedirects(self.client.get(url), reverse('password_change'), fetch_redirect_response=False)
         self.assertEqual(self.client.get('/api/status/').status_code, 403)
         page = self.client.get(reverse('password_change'))
-        self.assertContains(page, 'PRIMER ACCESO')
+        self.assertContains(page, 'FIRST SIGN-IN')
         rejected = self.client.post(reverse('password_change'), {
             'old_password': 'tokendash', 'new_password1': 'tokendash', 'new_password2': 'tokendash'})
-        self.assertContains(rejected, 'contraseña inicial')
+        self.assertContains(rejected, 'initial TokenDash password')
         done = self.client.post(reverse('password_change'), {
             'old_password': 'tokendash', 'new_password1': 'Otra-clave-larga-9', 'new_password2': 'Otra-clave-larga-9'})
         self.assertRedirects(done, reverse('password_change_done'), fetch_redirect_response=False)
-        self.assertEqual(self.client.get('/').status_code, 200)
+        self.assertEqual(self.client.get(reverse('dashboard')).status_code, 200)
         self.assertTrue(get_user_model().objects.get().check_password('Otra-clave-larga-9'))
 
     def test_admin_login_with_default_password_is_also_forced(self):
         self.client.post(reverse('admin:login'), {'username': 'admin', 'password': 'tokendash'})
-        self.assertRedirects(self.client.get('/admin/'), reverse('password_change'), fetch_redirect_response=False)
+        self.assertRedirects(self.client.get(reverse('admin:index')), reverse('password_change'), fetch_redirect_response=False)
 
     def test_other_passwords_are_not_forced(self):
         admin = get_user_model().objects.get()
         admin.set_password('Otra-clave-larga-9'); admin.save()
         self.client.post(reverse('login'), {'username': 'admin', 'password': 'Otra-clave-larga-9'})
-        self.assertEqual(self.client.get('/').status_code, 200)
-        self.assertContains(self.client.get(reverse('password_change')), 'TU CUENTA')
+        self.assertEqual(self.client.get(reverse('dashboard')).status_code, 200)
+        self.assertContains(self.client.get(reverse('password_change')), 'YOUR ACCOUNT')
 
 
 class RefreshSettingsTests(TestCase):
@@ -301,14 +310,14 @@ class RefreshSettingsTests(TestCase):
         listing = self.client.get(reverse('admin:dashboard_refreshsettings_changelist'))
         change_url = reverse('admin:dashboard_refreshsettings_change', args=[RefreshSettings.load().pk])
         self.assertRedirects(listing, change_url)
-        self.assertContains(self.client.get(change_url), 'Cada 2 horas')
+        self.assertContains(self.client.get(change_url), 'Every 2 hours')
         self.client.post(change_url, {'accounts': 'both', 'refresh_minutes': 120})
         self.assertEqual(RefreshSettings.load().refresh_minutes, 120)
         self.assertEqual(self.client.post(change_url, {'accounts': 'both', 'refresh_minutes': 5}).status_code, 200)  # not offered
         self.assertEqual(RefreshSettings.load().refresh_minutes, 120)
         self.assertNotContains(self.client.get(change_url), 'deletelink')
         self.assertEqual(self.client.get(reverse('admin:dashboard_refreshsettings_add')).status_code, 403)
-        self.assertContains(self.client.get(reverse('scraper_connect')), 'cada 120 minutos')
+        self.assertContains(self.client.get(reverse('scraper_connect')), 'every 120 minutes')
 
 
 class SingleAccountTests(TestCase):
@@ -328,7 +337,7 @@ class SingleAccountTests(TestCase):
         self.assertEqual(RefreshSettings.load().accounts, accounts)
 
     def test_both_accounts_by_default(self):
-        page = self.client.get('/')
+        page = self.client.get(reverse('dashboard'))
         self.assertContains(page, 'data-provider="chatgpt"')
         self.assertContains(page, 'data-provider="claude"')
         self.assertNotContains(page, 'provider-card wide')
@@ -336,24 +345,92 @@ class SingleAccountTests(TestCase):
     @patch('scraper.tasks.enqueue_refresh')
     def test_only_claude(self, enqueue):
         self.choose('claude')
-        page = self.client.get('/')
+        page = self.client.get(reverse('dashboard'))
         self.assertNotContains(page, 'data-provider="chatgpt"')
         self.assertContains(page, 'provider-card wide')
-        self.assertContains(page, 'tu cuenta de Claude')
+        self.assertContains(page, 'your Claude account')
         self.assertEqual([p['provider'] for p in self.client.get(reverse('provider-status')).json()['providers']], ['claude'])
         self.assertEqual({s['provider'] for s in self.client.get(reverse('usage-history')).json()['series']}, {'claude'})
         self.assertEqual(self.client.post(reverse('provider-refresh', args=['chatgpt'])).status_code, 404)
         self.assertEqual(self.client.get(reverse('ha-sensor', args=['chatgpt'])).status_code, 404)
         connect = self.client.get(reverse('scraper_connect'))
         self.assertNotContains(connect, 'id="codex-card"')
-        self.assertContains(connect, 'Solo usas Claude')
+        self.assertContains(connect, 'You only use Claude')
         from scraper.tasks import refresh_all
         refresh_all()
         enqueue.assert_called_once_with(ProviderStatus.objects.get(provider='claude').pk)
 
     def test_only_chatgpt(self):
         self.choose('chatgpt')
-        page = self.client.get('/')
+        page = self.client.get(reverse('dashboard'))
         self.assertContains(page, 'data-provider="chatgpt"')
         self.assertNotContains(page, 'data-provider="claude"')
         self.assertNotContains(self.client.get(reverse('scraper_connect')), 'id="claude-card"')
+
+
+@override_settings(STORAGES={'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
+class LanguageTests(TestCase):
+    """Every page exists in English (/en/) and Spanish (/es/); the API answers in the language asked for."""
+
+    def setUp(self):
+        # A request leaves its language active in the thread: start the next test in English.
+        self.addCleanup(translation.activate, 'en')
+        self.user = get_user_model().objects.create_superuser('jefe', '', 'Otra-clave-larga-9')
+        self.claude = ProviderStatus.objects.get(provider='claude')
+        ProviderStatus.objects.filter(pk=self.claude.pk).update(
+            state='unavailable', used_percent=26, last_success_at=timezone.now(),
+            last_error=QuotaUnavailable.message, quotas=[
+                {'key': 'session', 'label': '5-hour session', 'used_percent': '26.00',
+                 'resets_at': '2030-01-02T06:41:00+00:00'},
+                {'key': 'weekly', 'label': 'Codex · 3 h window', 'used_percent': '10.00'}])
+
+    def test_an_address_without_a_language_follows_the_browser(self):
+        self.assertRedirects(self.client.get('/', HTTP_ACCEPT_LANGUAGE='es-ES,es;q=0.9'), '/es/', fetch_redirect_response=False)
+        self.assertRedirects(self.client.get('/', HTTP_ACCEPT_LANGUAGE='en-GB'), '/en/', fetch_redirect_response=False)
+        # A language TokenDash does not have falls back to English.
+        self.assertRedirects(self.client.get('/', HTTP_ACCEPT_LANGUAGE='de'), '/en/', fetch_redirect_response=False)
+
+    def test_each_page_is_written_in_its_language(self):
+        self.client.force_login(self.user)
+        spanish = self.client.get('/es/')
+        self.assertContains(spanish, '<html lang="es">')
+        self.assertContains(spanish, 'Actualizar ahora')
+        self.assertContains(spanish, 'src="/es/jsi18n/"')
+        english = self.client.get('/en/')
+        self.assertContains(english, '<html lang="en">')
+        self.assertContains(english, 'Refresh now')
+        # Search engines learn about the other version and the address without a prefix.
+        for page in (spanish, english):
+            self.assertContains(page, 'hreflang="en" href="http://testserver/en/"')
+            self.assertContains(page, 'hreflang="es" href="http://testserver/es/"')
+            self.assertContains(page, 'hreflang="x-default" href="http://testserver/"')
+        login = self.client.get('/es/accounts/login/')
+        self.assertContains(login, 'hreflang="en" href="http://testserver/en/accounts/login/"')
+        self.assertContains(self.client.get('/es/admin/'), 'Conectar cuentas')
+
+    def test_the_switch_keeps_the_page_and_remembers_the_choice(self):
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('set_language'), {'language': 'es', 'next': '/en/admin/connect/'})
+        self.assertRedirects(response, '/es/admin/connect/', fetch_redirect_response=False)
+        # The API has no prefix: it follows the remembered choice.
+        data = self.client.get(reverse('provider-status')).json()
+        self.assertEqual(next(p for p in data['providers'] if p['provider'] == 'claude')['state_label'],
+                         'No se ha podido leer una cuota de esta cuenta')
+
+    def test_the_api_answers_in_the_language_asked_for(self):
+        self.client.force_login(self.user)
+        for language, label, reset, error, codex in (
+                ('en', '5-hour session', 'Resets on Jan 2 at 07:41', 'No recognisable quota', 'Codex · 3 h window'),
+                ('es', 'Sesión de 5 horas', 'Se reinicia el 2/1 a las 07:41', 'No hemos encontrado', 'Codex · ventana de 3 h')):
+            data = self.client.get(reverse('provider-status'), HTTP_ACCEPT_LANGUAGE=language).json()
+            claude = next(p for p in data['providers'] if p['provider'] == 'claude')
+            self.assertEqual(claude['quota_label'], label)
+            self.assertEqual(claude['quotas'][0]['reset_text'], reset)
+            self.assertEqual(claude['quotas'][1]['label'], codex)
+            self.assertIn(error, claude['last_error'])
+        missing = self.client.post(reverse('provider-refresh', args=['otro']), HTTP_ACCEPT_LANGUAGE='es')
+        self.assertEqual(missing.json()['error'], 'Proveedor desconocido.')
+
+    def test_the_script_texts_come_in_each_language(self):
+        self.assertContains(self.client.get('/es/jsi18n/'), 'Llevas un')
+        self.assertNotContains(self.client.get('/en/jsi18n/'), 'Llevas un')

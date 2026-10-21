@@ -5,6 +5,7 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
+from django.db.models import F
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -111,6 +112,10 @@ class CodexPollTests(TestCase):
         codex_oauth.save_credential(self.status, codex_oauth.tokens_from_response(token_response(minutes)))
 
     def run_refresh(self):
+        # Windows' clock can give two runs in a row the same instant, and the second
+        # would then look like a duplicate delivery: place the previous attempt earlier.
+        ProviderStatus.objects.filter(pk=self.status.pk, last_attempt_at__isnull=False).update(
+            last_attempt_at=F('last_attempt_at') - timedelta(seconds=1))
         token = claim_refresh(self.status.pk)
         self.assertTrue(token)
         refresh_provider(self.status.pk, token)
@@ -125,7 +130,7 @@ class CodexPollTests(TestCase):
         self.assertEqual(float(status.used_percent), 42)
         self.assertEqual([(q['key'], q['used_percent']) for q in status.quotas], [('session', '42.00'), ('weekly', '7.00')])
         self.assertIn('resets_at', status.quotas[0])
-        self.assertTrue(status.quotas[0]['reset_text'].startswith('Se reinicia'))
+        self.assertTrue(status.quotas[0]['reset_text'].startswith('Resets on'))
         self.assertEqual(UsageLog.objects.filter(provider=status).count(), 2)
         headers = http.call_args.kwargs['headers']
         self.assertEqual(headers['ChatGPT-Account-Id'], 'acct-1')
@@ -150,7 +155,7 @@ class CodexPollTests(TestCase):
         status = self.run_refresh()
         self.assertEqual(status.state, 'expired')
         self.assertEqual(float(status.used_percent), 42)
-        self.assertIn('Conectar cuentas', status.last_error)
+        self.assertIn('Connect accounts', status.last_error)
 
     @patch('scraper.codex_oauth.http_json')
     def test_blocked_or_unexpected_responses_are_sanitized(self, http):

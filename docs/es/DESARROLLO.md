@@ -1,5 +1,7 @@
 # Desarrollo
 
+[English](../DEVELOPMENT.md) · **Español**
+
 Para quien quiera modificar TokenDash. Cómo está hecho por dentro: [ARQUITECTURA.md](ARQUITECTURA.md).
 
 ## Pila
@@ -7,7 +9,7 @@ Para quien quiera modificar TokenDash. Cómo está hecho por dentro: [ARQUITECTU
 - **Aplicación:** Django 5.2, con Celery (`worker` y `beat`), PostgreSQL 16 y Redis, orquestados con Docker Compose.
 - **Estilos:** Tailwind CSS v4, compilado desde `assets/app.css`. El CSS compilado (`static/css/app.css`) se incluye en el repositorio y se vuelve a generar al construir la imagen.
 - **Ficheros estáticos:** whitenoise.
-- **Idioma:** la interfaz está en español. El código y sus comentarios, en inglés.
+- **Idiomas:** la interfaz está en inglés y en español. El código, sus comentarios y los textos originales están en inglés; la traducción al español está en `locale/es/` ([Traducciones](#traducciones)).
 
 ## Entorno local
 
@@ -83,15 +85,31 @@ $env:DJANGO_SECRET_KEY='solo-comprobaciones-locales'
 .venv/bin/python scripts/check_connection_ui.py
 ```
 
-**Capturas del README.** `docs/img/panel.png` y `docs/img/panel-una-cuenta.png` se generan con datos inventados, en una base de pruebas propia:
+**Capturas del README.** `docs/img/panel.png` y `docs/img/panel-single-account.png` (en inglés) y sus versiones en español en `docs/img/es/` se generan con datos inventados, en una base de pruebas propia:
 
 ```bash
-.venv/bin/python scripts/capturas_demo.py
+.venv/bin/python scripts/demo_screenshots.py
 ```
 
 Playwright solo se usa en estas comprobaciones y en las capturas. La imagen de producción no lo incluye.
 
 No ejecutes las pruebas con el `.env` de una instalación real ni con su `DB_HOST`. Django crea su propia base de pruebas.
+
+## Traducciones
+
+Los textos se escriben en inglés, con `gettext` en Python, `{% translate %}` / `{% blocktranslate %}` en las plantillas y `gettext()` en JavaScript (el catálogo lo sirve `/<idioma>/jsi18n/`). Después de cambiar textos, actualiza el catálogo español, tradúcelo y compílalo. Hace falta GNU gettext; si no lo tienes (en Windows, por ejemplo), usa un contenedor temporal:
+
+```bash
+docker run --rm -e DJANGO_SECRET_KEY=x -v "$PWD:/app" -w /app python:3.12-slim-bookworm sh -c "apt-get update -qq && apt-get install -y -qq gettext >/dev/null && pip install -q -r requirements.txt && python manage.py makemessages -l es -i .venv -i node_modules -i staticfiles -i scripts && python manage.py makemessages -d djangojs -l es -i .venv -i node_modules -i staticfiles"
+```
+
+Rellena los `msgstr` vacíos o marcados `fuzzy` en `locale/es/LC_MESSAGES/django.po` y `djangojs.po`, y compila:
+
+```bash
+docker run --rm -e DJANGO_SECRET_KEY=x -v "$PWD:/app" -w /app python:3.12-slim-bookworm sh -c "apt-get update -qq && apt-get install -y -qq gettext >/dev/null && pip install -q -r requirements.txt && python manage.py compilemessages -i .venv -i node_modules"
+```
+
+Los `.mo` compilados se incluyen en el repositorio, así que las pruebas y la imagen no necesitan gettext.
 
 ## Probar una imagen antes de usarla
 

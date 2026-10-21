@@ -11,4 +11,4 @@ class ProviderCredential(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'Credencial de {self.provider}'
+        return f'Credential for {self.provider}'

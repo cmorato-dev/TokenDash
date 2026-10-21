@@ -103,10 +103,10 @@ class ClaudeClientTaskTests(TestCase):
         self.assertEqual(UsageLog.objects.filter(provider=self.provider).count(), 2)
 
     def test_a_failing_client_keeps_the_last_valid_reading(self):
-        UsageLog.objects.create(provider=self.provider, quota_key='session', quota_label='Sesión',
+        UsageLog.objects.create(provider=self.provider, quota_key='session', quota_label='Session',
                                 used_percent=Decimal('30'), observed_at=timezone.now())
         self.provider.used_percent = Decimal('30')
-        self.provider.quota_label = 'Sesión de 5 horas'
+        self.provider.quota_label = '5-hour session'
         self.provider.last_success_at = timezone.now() - timedelta(hours=1)
         self.provider.save()
         from scraper.claude_client import ClientUnavailable

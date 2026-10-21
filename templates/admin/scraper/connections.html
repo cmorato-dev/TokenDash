@@ -1,89 +1,89 @@
 {% extends 'admin/base_site.html' %}
-{% load static %}
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Administración</a> › Conectar cuentas</div>{% endblock %}
+{% load static i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate "Administration" %}</a> › {% translate "Connect accounts" %}</div>{% endblock %}
 {% block content %}
 <form hidden>{% csrf_token %}</form>
 
-{% if shown|length == 1 %}<p class="connect-message">Solo usas {% if 'chatgpt' in shown %}ChatGPT{% else %}Claude{% endif %}. Si también pagas la otra suscripción, actívala en <a href="{% url 'admin:dashboard_refreshsettings_changelist' %}">Ajustes</a>.</p>{% endif %}
+{% if shown|length == 1 %}{% url 'admin:dashboard_refreshsettings_changelist' as settings_url %}<p class="connect-message">{% if 'chatgpt' in shown %}{% blocktranslate %}You only use ChatGPT. If you also pay for the other subscription, turn it on in <a href="{{ settings_url }}">Settings</a>.{% endblocktranslate %}{% else %}{% blocktranslate %}You only use Claude. If you also pay for the other subscription, turn it on in <a href="{{ settings_url }}">Settings</a>.{% endblocktranslate %}{% endif %}</p>{% endif %}
 {% if 'chatgpt' in shown %}
 <section class="connect-card" id="codex-card" data-url="{% url 'scraper_codex_login' %}">
-  <p class="eyebrow">LÍMITES DE CODEX</p>
-  <h2>{% if shown|length > 1 %}1 · {% endif %}ChatGPT: límites de Codex (5 horas y semana)</h2>
+  <p class="eyebrow">{% translate "CODEX LIMITS" %}</p>
+  <h2>{% if shown|length > 1 %}1 · {% endif %}{% translate "ChatGPT: Codex limits (5 hours and week)" %}</h2>
   {% if codex_credential %}
-    <p class="connect-state"><span class="connected">Cuenta conectada{% if codex_credential.plan_type %} · plan {{ codex_credential.plan_type }}{% endif %}</span> · desde {{ codex_credential.connected_at }}</p>
-    <p>{{ chatgpt.get_state_display }}{% if chatgpt.last_success_at %} · última lectura: {{ chatgpt.last_success_at }}{% endif %}</p>
-    {% if chatgpt.last_error %}<p>{{ chatgpt.last_error }}</p>{% endif %}
+    <p class="connect-state"><span class="connected">{% translate "Account connected" %}{% if codex_credential.plan_type %} · {% blocktranslate with plan=codex_credential.plan_type %}plan {{ plan }}{% endblocktranslate %}{% endif %}</span> · {% blocktranslate with since=codex_credential.connected_at %}since {{ since }}{% endblocktranslate %}</p>
+    <p>{{ chatgpt.get_state_display }}{% if chatgpt.last_success_at %} · {% blocktranslate with when=chatgpt.last_success_at %}last reading: {{ when }}{% endblocktranslate %}{% endif %}</p>
+    {% if chatgpt.last_error %}<p>{% translate chatgpt.last_error %}</p>{% endif %}
   {% else %}
-    <p class="connect-state">Sin conectar</p>
+    <p class="connect-state">{% translate "Not connected" %}</p>
   {% endif %}
-  <p>El servidor consulta cada {{ interval_minutes|default:'20' }} minutos los mismos límites que muestra Codex, aunque tengas el navegador cerrado. Solo hace falta iniciar sesión <strong>una vez</strong>:</p>
+  <p>{% blocktranslate with minutes=interval_minutes|default:'20' %}The server reads the same limits Codex shows every {{ minutes }} minutes, even with your browser closed. You only need to sign in <strong>once</strong>:{% endblocktranslate %}</p>
   <ol>
-    <li>Pulsa <strong>Iniciar sesión con ChatGPT</strong>. Se abrirá la página oficial de OpenAI en otra pestaña; entra con tu cuenta y autoriza.</li>
-    <li>Al terminar, esa pestaña mostrará <em>«No se puede acceder a este sitio»</em> en <code>localhost:1455</code>. <strong>Es normal.</strong> Copia la dirección completa de la barra de direcciones.</li>
-    <li>Pégala aquí y pulsa <strong>Completar conexión</strong>. El código caduca en pocos minutos.</li>
+    <li>{% blocktranslate %}Press <strong>Sign in with ChatGPT</strong>. The official OpenAI page opens in another tab; sign in with your account and authorise.{% endblocktranslate %}</li>
+    <li>{% blocktranslate %}When you finish, that tab shows <em>“This site can’t be reached”</em> at <code>localhost:1455</code>. <strong>That is expected.</strong> Copy the full address from the address bar.{% endblocktranslate %}</li>
+    <li>{% blocktranslate %}Paste it here and press <strong>Complete connection</strong>. The code expires in a few minutes.{% endblocktranslate %}</li>
   </ol>
-  <div class="browser-tools"><button id="codex-start" type="button">Iniciar sesión con ChatGPT</button>{% if codex_credential %}<button id="codex-disconnect" type="button">Desconectar</button>{% endif %}</div>
+  <div class="browser-tools"><button id="codex-start" type="button">{% translate "Sign in with ChatGPT" %}</button>{% if codex_credential %}<button id="codex-disconnect" type="button">{% translate "Disconnect" %}</button>{% endif %}</div>
   <div class="entry" id="codex-paste" hidden>
-    <label style="flex:1 1 420px">Dirección de la pestaña (empieza por http://localhost:1455/auth/callback)<input id="codex-callback" type="text" autocomplete="off" spellcheck="false" style="width:100%"></label>
-    <button id="codex-complete" type="button">Completar conexión</button>
+    <label style="flex:1 1 420px">{% translate "Address of the tab (starts with http://localhost:1455/auth/callback)" %}<input id="codex-callback" type="text" autocomplete="off" spellcheck="false" style="width:100%"></label>
+    <button id="codex-complete" type="button">{% translate "Complete connection" %}</button>
   </div>
   <p id="codex-status" class="connect-message" role="status" aria-live="polite"></p>
-  <p class="browser-hint">TokenDash guarda el token de acceso cifrado en su base de datos y lo renueva solo; nunca guarda tu contraseña. Usa los mismos endpoints que el cliente Codex de código abierto: no son una API documentada y OpenAI podría cambiarlos. Si falla, se conservan los últimos datos. ChatGPT no publica porcentajes para los chats normales; los únicos son los de Codex.</p>
+  <p class="browser-hint">{% translate "TokenDash keeps the access token encrypted in its database and renews it on its own; it never stores your password. It uses the same endpoints as the open-source Codex client: they are not a documented API and OpenAI could change them. If it fails, the latest data is kept. ChatGPT publishes no percentages for regular chats; the only ones are those of Codex." %}</p>
 </section>
 {% endif %}
 
 {% if 'claude' in shown %}
 <section class="connect-card" id="claude-card">
-  <p class="eyebrow">CUOTA DE CLAUDE</p>
-  <h2>{% if shown|length > 1 %}2 · {% endif %}Claude: % de cuota (5 horas y semana)</h2>
-  {% if claude.last_success_at %}<p>{{ claude.get_state_display }} · último dato: {{ claude.last_success_at }}</p>{% endif %}
-  {% if claude.last_error %}<p>{{ claude.last_error }}</p>{% endif %}
+  <p class="eyebrow">{% translate "CLAUDE QUOTA" %}</p>
+  <h2>{% if shown|length > 1 %}2 · {% endif %}{% translate "Claude: quota % (5 hours and week)" %}</h2>
+  {% if claude.last_success_at %}<p>{{ claude.get_state_display }} · {% blocktranslate with when=claude.last_success_at %}last reading: {{ when }}{% endblocktranslate %}</p>{% endif %}
+  {% if claude.last_error %}<p>{% translate claude.last_error %}</p>{% endif %}
 
-  <p>El <strong>servidor</strong> consulta los porcentajes de sesión y semana con el propio cliente oficial de Claude Code. No hace falta ningún PC encendido ni agente instalado, y el cliente conserva la sesión por su cuenta.</p>
+  <p>{% blocktranslate %}The <strong>server</strong> reads the session and weekly percentages with the official Claude Code client itself. No PC needs to stay on and no agent needs to be installed, and the client keeps the session on its own.{% endblocktranslate %}</p>
 
-  <h3>Estado de la sesión en el servidor</h3>
+  <h3>{% translate "Session state on the server" %}</h3>
   <p class="connect-state">{% if claude_session.connected %}<span class="connected">● {{ claude_session.label }}</span>{% else %}○ {{ claude_session.label }}{% endif %}</p>
-  {% if claude_session.checked_at %}<p class="browser-hint">Última comprobación: {{ claude_session.checked_at }}.</p>{% endif %}
+  {% if claude_session.checked_at %}<p class="browser-hint">{% blocktranslate with when=claude_session.checked_at %}Last check: {{ when }}.{% endblocktranslate %}</p>{% endif %}
   {% if claude_session.connected %}
-    <p class="browser-hint">El cliente conserva esta sesión y la renueva solo. Solo hay que repetir la vinculación si la sesión caduca o se cierra sesión en claude.ai desde todos los dispositivos.</p>
+    <p class="browser-hint">{% translate "The client keeps this session and renews it on its own. The linking only has to be repeated if the session expires or you sign out of claude.ai on all devices." %}</p>
   {% else %}
-    <p>Para que el servidor lea la cuota hay que <strong>vincular la cuenta de claude.ai una sola vez</strong>, desde una consola del servidor (SSH). Sigue la guía de abajo o envíasela a quien administre el servidor.</p>
+    <p>{% blocktranslate %}For the server to read the quota, <strong>link the claude.ai account once</strong>, from a console on the server (SSH). Follow the guide below or send it to whoever runs the server.{% endblocktranslate %}</p>
   {% endif %}
 
   <details class="claude-guide"{% if not claude_session.connected %} open{% endif %}>
-    <summary><strong>Guía paso a paso para vincular Claude</strong> (se hace una sola vez)</summary>
-    <p class="browser-hint">Cada comando tiene su botón <strong>Copiar</strong>: pégalos en orden en una terminal del servidor (o por SSH). Si la cuenta es de otra persona, ella hace el paso 4. La misma guía está en <code>docs/VINCULAR_CLAUDE.md</code>.</p>
+    <summary>{% blocktranslate %}<strong>Step-by-step guide to link Claude</strong> (done only once){% endblocktranslate %}</summary>
+    <p class="browser-hint">{% blocktranslate %}Each command has its own <strong>Copy</strong> button: paste them in order into a terminal on the server (or over SSH). If the account belongs to someone else, they do step 4. The same guide is in <code>docs/LINK_CLAUDE.md</code>.{% endblocktranslate %}</p>
     <ol class="guide-steps" id="claude-guide-steps">
-      <li><strong>Entrar en el servidor</strong> y en la carpeta de TokenDash (la que contiene <code>docker-compose.yml</code>; cámbiala si no es <code>~/tokendash</code>):
-        <div class="command-row"><code class="command">ssh usuario@servidor-tokendash</code><button type="button" class="copy-command">Copiar</button></div>
-        <div class="command-row"><code class="command">cd ~/tokendash</code><button type="button" class="copy-command">Copiar</button></div>
-        <span class="browser-hint">Si <code>docker</code> responde <em>permission denied</em>, antepón <code>sudo</code> a los comandos.</span></li>
-      <li><strong>Ver si ya está vinculado.</strong> Si aparece <code>"authMethod": "claude.ai"</code>, salta al paso 6.
-        <div class="command-row"><code class="command">{{ claude_session.status_command }}</code><button type="button" class="copy-command">Copiar</button></div></li>
-      <li><strong>Iniciar sesión.</strong> El terminal muestra una dirección que empieza por <code>https://claude.com/cai/oauth/authorize</code> y se queda esperando: no lo cierres. Copia la dirección completa (es larga; si se parte en varias líneas, únelas) y ábrela en el navegador.
-        <div class="command-row"><code class="command">{{ claude_session.command }}</code><button type="button" class="copy-command">Copiar</button></div></li>
-      <li><strong>Autorizar.</strong> En el navegador, entra con la cuenta de claude.ai, pulsa <strong>Autorizar</strong> y copia el <strong>código</strong> que muestra la página.</li>
-      <li><strong>Pegar el código</strong> en el terminal que esperaba y pulsar Enter. Debe aparecer <code>Login successful</code>. Pega <strong>solo el código</strong>, sin la dirección; si caduca, repite el paso 3.</li>
-      <li><strong>Comprobar y activar.</strong> Comprueba la sesión, activa la lectura en el servidor y actualiza la cuota en ese momento. Debe terminar con «Cuota de Claude actualizada en el dashboard».
-        <div class="command-row"><code class="command">{{ claude_session.check_command }}</code><button type="button" class="copy-command">Copiar</button></div></li>
-      <li><strong>Revisar aquí.</strong> Pulsa <strong>Comprobar ahora la sesión</strong> (abajo): debe decir «Sesión de claude.ai conectada». El dashboard mostrará Claude como Actualizado.</li>
+      <li>{% blocktranslate %}<strong>Open the server</strong> and the TokenDash folder (the one with <code>docker-compose.yml</code>; change it if it is not <code>~/tokendash</code>):{% endblocktranslate %}
+        <div class="command-row"><code class="command">ssh {% translate "user@tokendash-server" %}</code><button type="button" class="copy-command">{% translate "Copy" %}</button></div>
+        <div class="command-row"><code class="command">cd ~/tokendash</code><button type="button" class="copy-command">{% translate "Copy" %}</button></div>
+        <span class="browser-hint">{% blocktranslate %}If <code>docker</code> answers <em>permission denied</em>, put <code>sudo</code> before the commands.{% endblocktranslate %}</span></li>
+      <li>{% blocktranslate %}<strong>See whether it is already linked.</strong> If <code>"authMethod": "claude.ai"</code> appears, skip to step 6.{% endblocktranslate %}
+        <div class="command-row"><code class="command">{{ claude_session.status_command }}</code><button type="button" class="copy-command">{% translate "Copy" %}</button></div></li>
+      <li>{% blocktranslate %}<strong>Sign in.</strong> The terminal shows an address that starts with <code>https://claude.com/cai/oauth/authorize</code> and waits: do not close it. Copy the full address (it is long; if it wraps over several lines, join them) and open it in the browser.{% endblocktranslate %}
+        <div class="command-row"><code class="command">{{ claude_session.command }}</code><button type="button" class="copy-command">{% translate "Copy" %}</button></div></li>
+      <li>{% blocktranslate %}<strong>Authorise.</strong> In the browser, sign in with the claude.ai account, press <strong>Authorize</strong> and copy the <strong>code</strong> the page shows.{% endblocktranslate %}</li>
+      <li>{% blocktranslate %}<strong>Paste the code</strong> into the waiting terminal and press Enter. <code>Login successful</code> should appear. Paste <strong>only the code</strong>, without the address; if it expires, repeat step 3.{% endblocktranslate %}</li>
+      <li>{% blocktranslate %}<strong>Check and turn on.</strong> Check the session, turn on reading on the server and refresh the quota right away. It should end with “Claude quota updated on the dashboard”.{% endblocktranslate %}
+        <div class="command-row"><code class="command">{{ claude_session.check_command }}</code><button type="button" class="copy-command">{% translate "Copy" %}</button></div></li>
+      <li>{% blocktranslate %}<strong>Check here.</strong> Press <strong>Check the session now</strong> (below): it should say “claude.ai session connected”. The dashboard will show Claude as Updated.{% endblocktranslate %}</li>
     </ol>
-    <div class="browser-tools"><button type="button" id="claude-guide-copy">Copiar la guía completa</button></div>
-    <p class="browser-hint"><strong>No uses <code>claude setup-token</code></strong>: Anthropic limita ese token a enviar mensajes al modelo y no puede leer la cuota. Para desvincular el servidor: <code>docker compose exec worker claude auth logout</code>.</p>
+    <div class="browser-tools"><button type="button" id="claude-guide-copy">{% translate "Copy the whole guide" %}</button></div>
+    <p class="browser-hint">{% blocktranslate %}<strong>Do not use <code>claude setup-token</code></strong>: Anthropic limits that token to sending messages to the model and it cannot read the quota. To unlink the server: <code>docker compose exec worker claude auth logout</code>.{% endblocktranslate %}</p>
   </details>
-  <div class="browser-tools"><button type="button" id="claude-session-check" data-url="{% url 'scraper_claude_client' %}">Comprobar ahora la sesión</button></div>
+  <div class="browser-tools"><button type="button" id="claude-session-check" data-url="{% url 'scraper_claude_client' %}">{% translate "Check the session now" %}</button></div>
   <p id="claude-session-status" class="connect-message" role="status" aria-live="polite"></p>
 
   {% if claude.collection_mode == 'client' %}
-    <p class="connected">Los porcentajes de sesión y semana se leen <strong>en el servidor</strong>. La consulta es experimental y puede cambiar; si falla, se conserva la última lectura con su fecha.</p>
+    <p class="connected">{% blocktranslate %}The session and weekly percentages are read <strong>on the server</strong>. The request is experimental and may change; if it fails, the last reading is kept with its date.{% endblocktranslate %}</p>
   {% else %}
-    <p>Activa la lectura en el servidor para que Claude aparezca en el panel. El servidor no envía mensajes al modelo, no extrae credenciales y solo publica el porcentaje y la fecha de reinicio.</p>
-    <div class="browser-tools"><button type="button" id="claude-client-enable" data-url="{% url 'scraper_claude_client' %}">Que el servidor consulte los límites de Claude</button></div>
+    <p>{% translate "Turn on reading on the server so Claude appears on the dashboard. The server sends no messages to the model, extracts no credentials and only publishes the percentage and the reset date." %}</p>
+    <div class="browser-tools"><button type="button" id="claude-client-enable" data-url="{% url 'scraper_claude_client' %}">{% translate "Let the server read the Claude limits" %}</button></div>
     <p id="claude-client-status" class="connect-message" role="status" aria-live="polite"></p>
   {% endif %}
 </section>
 {% endif %}
 
-<p><a href="{% url 'dashboard' %}">Volver al dashboard →</a></p>
+<p><a href="{% url 'dashboard' %}">{% translate "Back to the dashboard →" %}</a></p>
 {% endblock %}
-{% block extrabody %}{{ block.super }}<script src="{% static 'js/accounts.js' %}" defer></script>{% endblock %}
+{% block extrabody %}{{ block.super }}<script src="{% url 'javascript-catalog' %}" defer></script><script src="{% static 'js/accounts.js' %}" defer></script>{% endblock %}

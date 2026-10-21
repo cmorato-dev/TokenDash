@@ -61,7 +61,7 @@ class ClaudeClientTests(SimpleTestCase):
              patch.object(claude_client, 'auth_state', return_value='api_key'):
             with self.assertRaises(claude_client.ClientUnavailable) as caught:
                 claude_client.read_limits()
-        self.assertIn('clave de API', caught.exception.message)
+        self.assertIn('API key', caught.exception.message)
 
     def test_a_missing_client_is_reported_without_reading_anything(self):
         with patch.object(claude_client, 'find_executable', return_value=None):
@@ -82,7 +82,7 @@ class ClaudeClientTests(SimpleTestCase):
         ])
         self.assertEqual([r.key for r in readings], ['session', 'weekly_all'])
         self.assertEqual([str(r.used_percent) for r in readings], ['42.00', '7.00'])
-        self.assertIn('Se reinicia el', readings[0].reset_text)
+        self.assertIn('Resets on', readings[0].reset_text)
 
     def test_out_of_range_or_unknown_windows_are_dropped(self):
         readings = claude_readings([
@@ -139,7 +139,7 @@ class ClaudeSessionStateTests(SimpleTestCase):
             state = claude_client.session_state()
         self.assertFalse(state['connected'])
         self.assertEqual(state['method'], 'unknown')
-        self.assertIn('No se ha podido comprobar', state['label'])
+        self.assertIn('could not be checked', state['label'])
 
     def test_a_missing_client_is_reported_without_running_anything(self):
         with patch.object(claude_client, 'find_executable', return_value=None):

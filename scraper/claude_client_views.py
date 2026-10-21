@@ -13,6 +13,7 @@ import json
 from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 
 from dashboard.models import ProviderStatus
@@ -45,7 +46,7 @@ def client_session_state():
     if not method:
         return {'installed': installed, 'connected': False, 'method': None,
                 'checked_at': None,
-                'label': 'El servidor todavía no ha comprobado la sesión de Claude.',
+                'label': _('The server has not checked the Claude session yet.'),
                 'command': LOGIN_COMMAND, 'status_command': STATUS_COMMAND, 'check_command': CHECK_COMMAND}
     label, connected = describe_session(method)
     if method == 'unavailable':
@@ -59,49 +60,49 @@ def client_session_state():
 def claude_client_mode(request):
     check_operator(request)
     if request.method != 'POST':
-        return JsonResponse({'error': 'Utiliza POST.'}, status=405)
+        return JsonResponse({'error': _('Use POST.')}, status=405)
     try:
         if len(request.body) > 4096:
             raise ValueError()
         action = json.loads(request.body).get('action')
     except (ValueError, TypeError, AttributeError):
-        return JsonResponse({'error': 'Solicitud no válida.'}, status=400)
+        return JsonResponse({'error': _('Invalid request.')}, status=400)
 
     status = ProviderStatus.objects.get(provider='claude')
 
     if action == 'enable':
         if not client_available():
-            return JsonResponse({'error': 'El servidor no tiene el cliente oficial de Claude Code instalado. '
-                                           'Reconstruye la imagen o indica CLAUDE_CLIENT_PATH en el .env.'}, status=409)
+            return JsonResponse({'error': _('The official Claude Code client is not installed on the server. '
+                                             'Rebuild the image or set CLAUDE_CLIENT_PATH in the .env.')}, status=409)
         session = client_session_state()
         with transaction.atomic():
             ProviderStatus.objects.filter(pk=status.pk).update(
                 collection_mode='client', refresh_token='', refresh_expires_at=None, last_error='')
         try:
             enqueue_refresh(status.pk)
-            message = ('El servidor comprueba la sesión de claude.ai y lee los límites de Claude. '
-                       'Espera unos segundos y vuelve a cargar esta página.')
+            message = _('The server is checking the claude.ai session and reading the Claude limits. '
+                        'Wait a few seconds and reload this page.')
         except Exception:
-            message = ('El servidor consultará los límites de Claude en la próxima actualización automática. '
-                       'Si no aparecen, comprueba que la cuenta esté conectada en el servidor.')
+            message = _('The server will read the Claude limits at the next automatic refresh. '
+                        'If they do not appear, check that the account is connected on the server.')
         if not session['connected']:
             # The last published state does not say there is a usable session:
             # name the command instead of making the operator hunt for it.
             if session['method'] and session['method'] != 'unknown':
-                message += f' Conéctala en el servidor con: {session["command"]}.'
+                message += ' ' + _('Connect it on the server with: %(command)s.') % {'command': session['command']}
             else:
-                message += (f' Si la cuota no aparece, comprueba la sesión en el servidor con: '
-                            f'{session["command"]}.')
+                message += ' ' + _('If the quota does not appear, check the session on the server with: %(command)s.') % {
+                    'command': session['command']}
             return JsonResponse({'message': message, 'needs_session': True, 'command': session['command']})
         return JsonResponse({'message': message})
 
     if action == 'check':
         try:
             check_claude_session.delay()
-            message = ('El servidor está comprobando la sesión de claude.ai. '
-                       'Espera unos segundos y vuelve a cargar esta página.')
+            message = _('The server is checking the claude.ai session. '
+                        'Wait a few seconds and reload this page.')
         except Exception:
-            message = 'El servidor lo comprobará en la próxima actualización automática.'
+            message = _('The server will check it at the next automatic refresh.')
         return JsonResponse({'message': message})
 
-    return JsonResponse({'error': 'Acción desconocida.'}, status=400)
+    return JsonResponse({'error': _('Unknown action.')}, status=400)

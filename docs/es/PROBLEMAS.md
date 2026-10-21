@@ -1,5 +1,7 @@
 # Problemas frecuentes
 
+[English](../TROUBLESHOOTING.md) · **Español**
+
 Los comandos se ejecutan en la carpeta de TokenDash. Si algo no aparece aquí, mira los mensajes con `docker compose logs --tail=100 web worker` y busca la línea de error.
 
 ## Instalación y acceso
@@ -14,6 +16,8 @@ Los comandos se ejecutan en la carpeta de TokenDash. Si algo no aparece aquí, m
 | «Prohibido (403) · CSRF» al entrar | La dirección no está en `DJANGO_CSRF_TRUSTED_ORIGINS` | Añade `http://IP:8000`, o tu dirección `https://…`, y ejecuta `docker compose up -d` |
 | `web` no llega a `healthy` | La base de datos aún arranca, o hay un error | Espera un minuto. Si sigue igual, mira `docker compose logs migrate web` |
 | He olvidado la contraseña | — | Ejecuta `docker compose exec web python manage.py changepassword TU_USUARIO`. Si tampoco recuerdas el usuario: `docker compose exec web python manage.py createsuperuser` |
+| La página sale en inglés | Tu navegador no pide español | Pulsa **ES** arriba a la derecha; TokenDash lo recuerda. También puedes abrir directamente `http://IP:8000/es/` |
+| Los mensajes de la consola salen en inglés | Es el idioma por defecto de la consola | Pon `LANGUAGE_CODE=es` en el `.env` y ejecuta `docker compose up -d` |
 | `admin` / `tokendash` no funciona | Ya hay usuarios: el usuario inicial solo se crea en una instalación vacía | Usa tu usuario. Si no lo recuerdas, mira la fila anterior |
 
 ## ChatGPT

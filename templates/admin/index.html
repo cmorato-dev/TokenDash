@@ -3,9 +3,9 @@
 {% block content %}
 {% if user.is_superuser %}
 <div class="module" id="welcome-card">
-  <h2>Conecta tus cuentas de ChatGPT y Claude</h2>
-  <p>El servidor lee los límites de Claude con el cliente oficial y los de ChatGPT (Codex) con tu cuenta de OpenAI. No hace falta ningún PC encendido ni agente instalado.</p>
-  <p><a class="button" href="{% url 'scraper_connect' %}">Conectar cuentas →</a></p>
+  <h2>{% translate "Connect your ChatGPT and Claude accounts" %}</h2>
+  <p>{% translate "The server reads the Claude limits with the official client and the ChatGPT (Codex) limits with your OpenAI account. No PC needs to stay on and no agent needs to be installed." %}</p>
+  <p><a class="button" href="{% url 'scraper_connect' %}">{% translate "Connect accounts →" %}</a></p>
 </div>
 {% endif %}
 {% include 'admin/app_list.html' with app_list=app_list show_changelinks=True %}

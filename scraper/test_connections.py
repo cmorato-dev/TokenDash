@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import translation
 
 @override_settings(STORAGES={'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
 class ConnectionTests(TestCase):
@@ -9,13 +10,13 @@ class ConnectionTests(TestCase):
         self.client.force_login(self.admin)
 
     def test_guided_page_and_entry_link(self):
-        self.assertContains(self.client.get(reverse('admin:index')), 'Conectar cuentas')
+        self.assertContains(self.client.get(reverse('admin:index')), 'Connect accounts')
         response = self.client.get(reverse('scraper_connect'))
-        self.assertContains(response, 'Iniciar sesión con ChatGPT')
-        self.assertContains(response, 'Guía paso a paso para vincular Claude')
+        self.assertContains(response, 'Sign in with ChatGPT')
+        self.assertContains(response, 'Step-by-step guide to link Claude')
         # The options that needed an open browser are no longer offered.
-        self.assertNotContains(response, 'Otras opciones')
-        self.assertNotContains(response, 'Guardar y activar')
+        self.assertNotContains(response, 'Other options')
+        self.assertNotContains(response, 'Save and turn on')
         self.assertNotContains(response, 'connections.js')
         self.assertIn('no-store', response['Cache-Control'])
 
@@ -30,8 +31,12 @@ class ConnectionTests(TestCase):
         self.assertEqual(self.client.get(reverse('scraper_connect')).status_code, 403)
 
     def test_the_old_address_still_leads_to_the_page(self):
-        response = self.client.get('/admin/scraper/scrapersession/connect/')
-        self.assertRedirects(response, reverse('scraper_connect'), status_code=301)
+        for old in ('/en/admin/scraper/scrapersession/connect/', '/en/admin/conectar/'):
+            self.assertRedirects(self.client.get(old), reverse('scraper_connect'), status_code=301)
+        # Without the language prefix it goes through the visitor's language first.
+        self.addCleanup(translation.activate, 'en')
+        response = self.client.get('/admin/conectar/', follow=True, HTTP_ACCEPT_LANGUAGE='es')
+        self.assertEqual(response.redirect_chain[-1][0], '/es/admin/connect/')
 
     def test_retired_endpoints_are_gone(self):
         for url in ('/api/browser-sync/', '/api/agent/ingest/', '/api/tokens/'):

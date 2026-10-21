@@ -18,6 +18,7 @@ from urllib.request import Request, urlopen
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.utils import timezone
+from django.utils.translation import gettext as _, gettext_noop
 from django.views.decorators.debug import sensitive_variables
 
 from .quotas import (QuotaUnavailable, ScrapeFailure, SessionExpired, VerificationRequired,  # noqa: F401  (re-exported)
@@ -33,19 +34,19 @@ LOGIN_MAX_AGE = timedelta(minutes=15)
 
 
 class AuthExpired(SessionExpired):
-    message = 'La conexión con ChatGPT ha caducado. Vuelve a iniciar sesión en «Conectar cuentas».'
+    message = gettext_noop('The connection with ChatGPT has expired. Sign in again in "Connect accounts".')
 
 
 class ProviderBlocked(VerificationRequired):
-    message = 'ChatGPT ha rechazado la consulta de uso desde el servidor. Se conservan los últimos datos.'
+    message = gettext_noop('ChatGPT refused the usage request from the server. The latest data is kept.')
 
 
 class NetworkFailure(ScrapeFailure):
-    message = 'No se ha podido contactar con ChatGPT. Se reintentará automáticamente.'
+    message = gettext_noop('ChatGPT could not be reached. It will be retried automatically.')
 
 
 class LoginError(Exception):
-    pass
+    """Raised while the operator signs in, so its message is already translated."""
 
 
 def _fernet():
@@ -96,16 +97,16 @@ def parse_callback(text):
     """Accept the address shown by the browser after authorizing (or just its query string)."""
     text = (text or '').strip()
     if len(text) > 4000:
-        raise LoginError('La dirección pegada es demasiado larga.')
+        raise LoginError(_('The pasted address is too long.'))
     parsed = urlparse(text if '://' in text else 'http://localhost/?' + text.lstrip('?'))
     if parsed.hostname not in ('localhost', '127.0.0.1') or (parsed.path and parsed.path not in ('/', '/auth/callback')):
-        raise LoginError('Pega la dirección completa de la pestaña, que empieza por http://localhost:1455/auth/callback.')
+        raise LoginError(_('Paste the full address of the tab, which starts with http://localhost:1455/auth/callback.'))
     query = parse_qs(parsed.query)
     if query.get('error'):
-        raise LoginError('ChatGPT no ha autorizado el acceso. Vuelve a intentarlo.')
+        raise LoginError(_('ChatGPT did not authorise the access. Try again.'))
     code, state = (query.get('code') or [''])[0], (query.get('state') or [''])[0]
     if not code or not state:
-        raise LoginError('La dirección pegada no contiene el código de autorización.')
+        raise LoginError(_('The pasted address does not contain the authorisation code.'))
     return code, state
 
 
@@ -142,8 +143,8 @@ def exchange_code(code, verifier):
         'client_id': CLIENT_ID, 'code_verifier': verifier,
     })
     if status != 200 or not isinstance(data, dict) or not data.get('access_token') or not data.get('refresh_token'):
-        logger.warning('Intercambio OAuth de Codex rechazado: status=%s', status)
-        raise LoginError('ChatGPT no ha aceptado el código. Los códigos caducan en pocos minutos: inicia sesión de nuevo y pega la dirección enseguida.')
+        logger.warning('Codex OAuth exchange refused: status=%s', status)
+        raise LoginError(_('ChatGPT did not accept the code. Codes expire in a few minutes: sign in again and paste the address straight away.'))
     return tokens_from_response(data)
 
 

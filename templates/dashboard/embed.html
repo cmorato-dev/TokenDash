@@ -1,18 +1,20 @@
-{% load static tz %}
+{% load static tz i18n %}
 {% get_current_timezone as dashboard_timezone %}
-{# One module alone, for a Home Assistant «Página web» (iframe) card. #}
+{% get_current_language as current_language %}
+{# One module alone, for a Home Assistant «Webpage» (iframe) card. #}
 <!doctype html>
-<html lang="es">
+<html lang="{{ current_language }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <title>TokenDash · {% if provider %}{{ provider.get_provider_display }}{% else %}Evolución de los límites{% endif %}</title>
+  <title>TokenDash · {% if provider %}{{ provider.get_provider_display }}{% else %}{% translate "Limits over time" %}{% endif %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="bg-transparent text-slate-100 antialiased" data-timezone="{{ dashboard_timezone }}" data-embed>
   <p id="feedback" class="mb-3 text-sm text-amber-300 empty:hidden" role="status" aria-live="polite"></p>
   {% if provider %}{% include 'dashboard/_provider_card.html' with embed=True %}{% else %}{% include 'dashboard/_history.html' with embed=True %}{% endif %}
+  <script src="{% url 'javascript-catalog' %}" defer></script>
   <script src="{% static 'js/dashboard.js' %}" defer></script>
 </body>
 </html>

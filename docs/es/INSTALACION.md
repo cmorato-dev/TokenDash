@@ -1,5 +1,7 @@
 # Instalar TokenDash paso a paso
 
+[English](../INSTALL.md) · **Español**
+
 Esta guía empieza desde cero. Si ya tienes Docker, salta al [paso 2](#2-descargar-tokendash).
 
 **Antes de empezar, elige el equipo.** TokenDash solo lee los límites mientras está encendido, así que conviene un equipo que no se apague: un miniPC, una Raspberry Pi 4 o 5, un NAS con Docker o un servidor de casa. Un ordenador de sobremesa también vale, pero solo verás datos de las horas en que esté encendido.
@@ -68,6 +70,8 @@ python3 scripts/init_env.py 192.168.1.50
 ```
 
 Con la IP, TokenDash se podrá abrir desde cualquier equipo de tu red. Si solo lo vas a abrir desde el mismo equipo, ejecútalo sin la IP.
+
+Las páginas salen en el idioma de cada navegador. Los mensajes de la consola (por ejemplo, los de `claude_status`) salen en inglés; para tenerlos en español, abre el `.env` y cambia `LANGUAGE_CODE=en` por `LANGUAGE_CODE=es`.
 
 > **Guarda una copia del `.env` en un sitio seguro** (un USB, tu gestor de contraseñas). Si lo pierdes, la conexión con ChatGPT deja de funcionar y hay que repetirla. No lo compartas: contiene las claves de tu instalación.
 

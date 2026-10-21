@@ -1,5 +1,7 @@
 # Uso del panel
 
+[English](../USAGE.md) · **Español**
+
 ## Primer acceso
 
 Abre TokenDash en el navegador, en `http://IP-DEL-EQUIPO:8000`, y entra con:
@@ -16,6 +18,10 @@ Antes de dejarte continuar, TokenDash te pide una contraseña nueva. La inicial 
 La contraseña nueva tiene que tener al menos 8 caracteres, no puede ser solo números ni una contraseña muy común, y no puede volver a ser `tokendash`.
 
 El usuario inicial solo se crea en una instalación nueva, cuando todavía no hay ningún usuario. Si ya existe alguno, no se crea.
+
+## Idioma
+
+TokenDash está en español y en inglés. Se abre en el idioma de tu navegador, y lo cambias con los botones **EN · ES** de arriba a la derecha: la misma página se abre en el otro idioma y TokenDash lo recuerda. Cada página tiene su dirección en cada idioma, por ejemplo `/es/` y `/en/` para el panel.
 
 ## Usuarios y contraseñas
 

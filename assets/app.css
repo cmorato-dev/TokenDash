@@ -10,6 +10,11 @@
   .panel { border: 1px solid #253044; border-radius: 20px; background: #111b2c; padding: 28px; }
   .brand { display: flex; align-items: center; gap: 10px; font-size: 24px; color: #34d399; font-weight: 700; }
   .brand span { color: #f1f5f9; }
+  /* EN · ES: the current language is highlighted. */
+  .language-switch { display: inline-flex; gap: 2px; border: 1px solid #253044; border-radius: 8px; padding: 2px; }
+  .language-switch button { border-radius: 6px; padding: 3px 7px; font-size: 11px; font-weight: 600; letter-spacing: .05em; color: #8190a6; }
+  .language-switch button:hover { color: #f1f5f9; }
+  .language-switch button[aria-current] { background: #17362e; color: #a7f3d0; }
   .eyebrow { color: #34d399; letter-spacing: .2em; font-size: 11px; font-weight: 600; }
   .badge { display: inline-block; border-radius: 7px; padding: 6px 9px; font-size: 11px; background: #1c293b; color: #b4c1d4; max-width: 220px; }
   .success { color: #6ee7b7; background: #14382f; }
