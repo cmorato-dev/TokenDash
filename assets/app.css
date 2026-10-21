@@ -19,8 +19,22 @@
   .provider-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; font-size: 25px; }
   .chatgpt { color: #6ee7b7; background: #153e34; }
   .claude { color: #fdba74; background: #493226; }
-  .gauge { --available: 0%; flex-shrink: 0; width: 138px; height: 138px; padding: 10px; border-radius: 50%; background: conic-gradient(#34d399 var(--available), #263449 0); }
-  [data-provider="claude"] .gauge { background: conic-gradient(#fb923c var(--available), #263449 0); }
+  /* Each card takes its provider's colour; past 50 % used it turns yellow and past 80 % red. */
+  .provider-card { --base: #34d399; --meter: var(--base); }
+  .provider-card[data-provider="claude"] { --base: #fb923c; }
+  .provider-card[data-level="warning"] { --meter: #facc15; }
+  .provider-card[data-level="critical"] { --meter: #f87171; }
+  .gauge { --available: 0%; flex-shrink: 0; width: 138px; height: 138px; padding: 10px; border-radius: 50%; background: conic-gradient(var(--meter) var(--available), #263449 0); }
+  .provider-card[data-level="warning"] .gauge strong, .provider-card[data-level="warning"] .used, .level-note[data-level="warning"] { color: #fde047; }
+  .provider-card[data-level="critical"] .gauge strong, .provider-card[data-level="critical"] .used, .level-note[data-level="critical"] { color: #fca5a5; }
+  .level-note { font-size: 12px; font-weight: 600; }
+  .level-note:empty { display: none; }
+  .level-note::before { content: "●"; margin-right: 6px; }
+  .quota-bar { height: 6px; margin-top: 6px; border-radius: 99px; background: #263449; overflow: hidden; }
+  .quota-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--base); }
+  .quota-bar[data-level="warning"] > span { background: #facc15; }
+  .quota-bar[data-level="critical"] > span { background: #f87171; }
+  .quota-bar.stale > span { opacity: .35; }
   .gauge > div { height: 100%; border-radius: 50%; background: #111b2c; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   .gauge strong { font-size: 27px; letter-spacing: -.05em; }
   .gauge span { font-size: 10px; color: #94a3b8; margin-top: 3px; }

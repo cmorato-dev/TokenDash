@@ -14,7 +14,7 @@ Muestra si cada parte está en marcha:
 |---|---|
 | `web` | La página web |
 | `worker` | Lee los límites |
-| `beat` | Le avisa cada 20 minutos |
+| `beat` | Le avisa cuando toca leer, según Administración → Ajustes |
 | `db` | La base de datos |
 | `redis` | La cola de tareas |
 
@@ -151,12 +151,11 @@ En `DJANGO_ALLOWED_HOSTS` puedes añadir varias direcciones separadas por comas,
 
 ## Cambiar otros ajustes
 
-En el `.env`:
+La frecuencia de actualización se cambia en el panel: **Administración → Ajustes** ([Uso del panel](USO.md#cada-cuánto-se-actualiza)). El resto de ajustes están en el `.env`:
 
 | Variable | Para qué | Por defecto |
 |---|---|---|
 | `TIME_ZONE` | Zona horaria de las fechas (`America/Mexico_City`, `America/Argentina/Buenos_Aires`…) | `Europe/Madrid` |
-| `SCRAPE_INTERVAL_MINUTES` | Cada cuántos minutos se leen los límites (mínimo 15) | `20` |
 | `WEB_BIND` | `0.0.0.0` para abrirlo desde la red; sin ella, solo desde el propio equipo | solo el equipo |
 
 Después de cambiar algo, ejecuta `docker compose up -d`.

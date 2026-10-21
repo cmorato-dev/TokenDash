@@ -43,7 +43,7 @@ Más casos en [Vincular Claude → Problemas](VINCULAR_CLAUDE.md#problemas).
 |---|---|
 | «Sin datos» | Todavía no hay ninguna lectura buena. **No significa 0 %** |
 | El porcentaje no cambia y la fecha es antigua | La última lectura falló. TokenDash conserva la última buena con su fecha. La tarjeta dice por qué falló |
-| «Ya se ha renovado» | El límite se reinició después de la última lectura. Se actualiza en la siguiente, como mucho en 20 minutos |
+| «Ya se ha renovado» | El límite se reinició después de la última lectura. Se actualiza en la siguiente lectura, según la frecuencia de Administración → Ajustes, o al pulsar «Actualizar ahora» |
 | La gráfica está vacía | Aparece tras la primera lectura correcta |
 | Las horas no coinciden con las mías | Cambia `TIME_ZONE` en el `.env` ([ajustes](MANTENIMIENTO.md#cambiar-otros-ajustes)) |
 

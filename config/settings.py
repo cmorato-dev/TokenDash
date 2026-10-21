@@ -86,9 +86,10 @@ CELERY_BROKER_CONNECTION_TIMEOUT = 3
 CELERY_TASK_SOFT_TIME_LIMIT = 150
 CELERY_TASK_TIME_LIMIT = 180
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_BEAT_SCHEDULE = {'refresh-providers': {
-    'task': 'scraper.tasks.refresh_all', 'schedule': SCRAPE_INTERVAL_MINUTES * 60,
-    'options': {'expires': SCRAPE_INTERVAL_MINUTES * 60},
+# Beat only ticks every minute: the refresh interval is chosen in the admin (Ajustes)
+# and refresh_if_due decides whether it is time. SCRAPE_INTERVAL_MINUTES is its first value.
+CELERY_BEAT_SCHEDULE = {'refresh-if-due': {
+    'task': 'scraper.tasks.refresh_if_due', 'schedule': 60, 'options': {'expires': 55},
 }}
 LOGGING = {'version': 1, 'disable_existing_loggers': False,
            'handlers': {'console': {'class': 'logging.StreamHandler'}},

@@ -111,4 +111,4 @@ rest:
         json_attributes: [weekly_resets_at, weekly_window_reset, state, last_success_at]
 ```
 
-TokenDash consulta los proveedores cada 20 minutos. Un `scan_interval` de 300 segundos basta.
+TokenDash consulta los proveedores con la frecuencia de **Administración → Ajustes**, cada 20 minutos por defecto. Un `scan_interval` de 300 segundos basta.

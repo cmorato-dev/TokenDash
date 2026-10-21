@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.utils import formats, timezone
 from django.urls import reverse
 
-from .models import IntegrationKey, ProviderStatus, UsageLog
+from .models import IntegrationKey, ProviderStatus, RefreshSettings, UsageLog
 from .views import EMBED_MODULES
 
 # Only the user list is needed: TokenDash has no permission groups.
@@ -54,3 +56,31 @@ class IntegrationKeyAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request), 'opts': self.opts, 'title': 'Clave creada',
             'record': obj, 'key': obj._key, 'modules': modules, 'sensors': sensors,
         })
+
+
+@admin.register(RefreshSettings)
+class RefreshSettingsAdmin(admin.ModelAdmin):
+    """A single page with the settings: no list, no add, no delete."""
+    fields = ('refresh_minutes', 'last_refresh', 'next_refresh')
+    readonly_fields = ('last_refresh', 'next_refresh')
+
+    @admin.display(description='última actualización automática')
+    def last_refresh(self, obj):
+        return self._when(obj.last_scheduled_at) or 'Todavía ninguna'
+
+    @admin.display(description='próxima actualización automática')
+    def next_refresh(self, obj):
+        return self._when(obj.next_refresh_at) or 'En el próximo minuto'
+
+    @staticmethod
+    def _when(moment):
+        return formats.date_format(timezone.localtime(moment), 'j/n/Y H:i') if moment else ''
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        return redirect('admin:dashboard_refreshsettings_change', RefreshSettings.load().pk)

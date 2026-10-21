@@ -13,6 +13,10 @@ function quotaSentence(quota) {
   const renews = quota.resets_at && !Number.isNaN(when.getTime()) ? ` Se renueva el ${renewDay.format(when)} a las ${renewHour.format(when)}.` : '';
   return `Llevas un ${percent(quota.used_percent)} del límite ${period}.${renews}`;
 }
+// More than half of a limit used turns it yellow; more than 80 %, red. A window that has
+// already restarted keeps its old value, so it is not coloured.
+const levelOf = (used, reset) => used === null || used === undefined || reset ? 'ok' : used > 80 ? 'critical' : used > 50 ? 'warning' : 'ok';
+const levelNotes = { warning: 'Has pasado de la mitad del límite.', critical: 'Te queda poco: has pasado del 80 % del límite.' };
 let pending = false;
 // Home Assistant modules carry their read-only key in the URL fragment (#clave=…),
 // which the browser never sends to the server; the API receives it as a header.
@@ -49,12 +53,28 @@ async function refreshStatus() {
     $('.hint', card).textContent = provider.hint || '';
     const resetText = quota => quota.window_reset ? 'La ventana se ha reiniciado desde esta lectura' : (quota.reset_text || '');
     $('.reset', card).textContent = provider.quotas[0] ? resetText(provider.quotas[0]) : '';
+    const level = levelOf(provider.used_percent, provider.quotas[0]?.window_reset);
+    card.dataset.level = level;
+    const note = $('.level-note', card);
+    note.dataset.level = level;
+    note.textContent = levelNotes[level] || '';
     const extra = $('.extra-quotas', card);
     extra.replaceChildren();
     provider.quotas.slice(1).forEach(quota => {
       const line = document.createElement('p');
       line.textContent = quotaSentence(quota);
-      extra.append(line);
+      // A thin bar with the share used, coloured like the gauge.
+      const bar = document.createElement('div');
+      bar.className = 'quota-bar';
+      bar.dataset.level = levelOf(quota.used_percent, quota.window_reset);
+      bar.classList.toggle('stale', Boolean(quota.window_reset));
+      bar.setAttribute('aria-hidden', 'true');
+      const fill = document.createElement('span');
+      fill.style.width = `${Math.min(100, Math.max(0, Number(quota.used_percent) || 0))}%`;
+      bar.append(fill);
+      const row = document.createElement('div');
+      row.append(line, bar);
+      extra.append(row);
     });
     const button = $('.refresh', card);
     if (button) { button.hidden = !provider.can_refresh; button.disabled = provider.refreshing; }

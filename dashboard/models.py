@@ -1,6 +1,8 @@
 import hashlib
 import secrets
+from datetime import timedelta
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -102,3 +104,36 @@ class IntegrationKey(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RefreshSettings(models.Model):
+    """How often the server reads the limits. A single row, edited in the admin."""
+    INTERVALS = [
+        (15, 'Cada 15 minutos'), (20, 'Cada 20 minutos'), (30, 'Cada 30 minutos'), (45, 'Cada 45 minutos'),
+        (60, 'Cada hora'), (120, 'Cada 2 horas'), (180, 'Cada 3 horas'), (360, 'Cada 6 horas'),
+    ]
+    refresh_minutes = models.PositiveSmallIntegerField(
+        'frecuencia de actualización', choices=INTERVALS, default=20,
+        help_text='Cada cuánto lee el servidor los límites de ChatGPT y Claude. El cambio se aplica en el siguiente minuto.')
+    last_scheduled_at = models.DateTimeField('última actualización automática', null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = 'ajustes'
+        verbose_name_plural = 'ajustes'
+
+    def __str__(self):
+        return 'Ajustes'
+
+    @classmethod
+    def load(cls):
+        # The first value comes from SCRAPE_INTERVAL_MINUTES, for installations that set it in the .env.
+        initial = settings.SCRAPE_INTERVAL_MINUTES
+        if initial not in dict(cls.INTERVALS):
+            initial = 20
+        return cls.objects.get_or_create(pk=1, defaults={'refresh_minutes': initial})[0]
+
+    @property
+    def next_refresh_at(self):
+        if self.last_scheduled_at is None:
+            return None
+        return self.last_scheduled_at + timedelta(minutes=self.refresh_minutes)

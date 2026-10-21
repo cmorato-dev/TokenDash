@@ -6,7 +6,7 @@
 Servidor Docker (Linux o Windows)
   Admin → login Codex → ProviderCredential cifrada
   Admin / claude_estado → modo «client» → el worker consulta Claude con el cliente oficial
-  beat → Redis → worker → lee ChatGPT/Codex y Claude → ProviderStatus + UsageLog
+  beat (cada minuto) → refresh_if_due → Redis → worker → lee ChatGPT/Codex y Claude → ProviderStatus + UsageLog
   web → dashboard de cuotas e histórico
   Home Assistant → /ha/<módulo>/ (tarjeta «Página web») y /api/ha/<proveedor>/ (sensores), con una clave de solo lectura
 ```
@@ -34,6 +34,7 @@ Servidor Docker (Linux o Windows)
 ## Modelos
 
 - `ProviderStatus` y `UsageLog`: cuotas actuales e histórico por ventana. No sumar ventanas incompatibles. `collection_mode` vale `none` (sin conectar), `api` (ChatGPT con credencial) o `client` (Claude con el cliente oficial). `client_auth_method` y `client_auth_checked_at` guardan el **tipo** de credencial del cliente oficial (nunca la credencial), publicado por el `worker` para que el panel pueda mostrarlo.
+- `RefreshSettings`: una sola fila con la frecuencia de actualización (15 min a 6 h) y la hora de la última lectura automática. Se edita en Administración → Ajustes.
 - `IntegrationKey`: claves de Home Assistant, de solo lectura. Solo se guarda su SHA-256; la clave se muestra una vez al crearla en el administrador.
 - `ProviderCredential`: tokens de ChatGPT/Codex cifrados con Fernet y una clave derivada de `DJANGO_SECRET_KEY`. Debe conservarse ese secreto al migrar.
 
@@ -60,7 +61,7 @@ ChatGPT/Codex: el superusuario inicia sesión una vez en OpenAI. Se valida PKCE/
 
 ## Servicios y despliegue
 
-Compose mantiene `web`, `worker`, `beat`, PostgreSQL 16, Redis y `migrate`, que aplica las migraciones y crea el usuario inicial en una instalación vacía. Beat usa el planificador estándar de Celery con el calendario de `config/settings.py`. Los datos persistentes están en PostgreSQL; las credenciales cifradas requieren también el secreto Django. La sesión de Claude está en el volumen `claude_config`.
+Compose mantiene `web`, `worker`, `beat`, PostgreSQL 16, Redis y `migrate`, que aplica las migraciones y crea el usuario inicial en una instalación vacía. Beat usa el planificador estándar de Celery: cada minuto lanza `scraper.tasks.refresh_if_due`, que compara la última lectura automática con la frecuencia elegida en **Administración → Ajustes** (`RefreshSettings`, una sola fila) y, si toca, encola `refresh_all`. Así la frecuencia cambia sin reiniciar beat. `SCRAPE_INTERVAL_MINUTES` solo fija su primer valor. Los datos persistentes están en PostgreSQL; las credenciales cifradas requieren también el secreto Django. La sesión de Claude está en el volumen `claude_config`.
 
 La imagen incluye el cliente oficial de Claude Code (`/opt/claude/bin/claude`), descargado del repositorio de lanzamientos de Anthropic y **verificado por SHA-256 contra su manifiesto firmado**; no se ejecuta ningún instalador externo. No incluye Playwright ni Chromium.
 

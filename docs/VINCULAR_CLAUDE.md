@@ -1,6 +1,6 @@
 # Vincular Claude con el servidor, paso a paso
 
-Se hace **una sola vez**: después el servidor lee la cuota de Claude cada 20 minutos sin que nadie tenga el navegador ni el PC encendidos. Solo se repite si la sesión caduca o si se cierra sesión en claude.ai desde todos los dispositivos.
+Se hace **una sola vez**: después el servidor lee la cuota de Claude periódicamente (cada 20 minutos por defecto) sin que nadie tenga el navegador ni el PC encendidos. Solo se repite si la sesión caduca o si se cierra sesión en claude.ai desde todos los dispositivos.
 
 Necesitas una suscripción de Claude (Pro o Max). TokenDash usa el cliente oficial de Claude Code, que ya viene dentro de TokenDash: no tienes que instalar nada.
 

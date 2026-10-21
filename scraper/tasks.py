@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import F, Q
 from django.utils import timezone
 
-from dashboard.models import ProviderStatus, UsageLog
+from dashboard.models import ProviderStatus, RefreshSettings, UsageLog
 from .models import ProviderCredential
 from .quotas import QuotaUnavailable, ScrapeFailure
 
@@ -82,6 +82,21 @@ def refresh_all():
     # The official Claude Code client can read the subscription limits on the server itself.
     for provider_id in ProviderStatus.objects.filter(collection_mode='client').values_list('pk', flat=True):
         enqueue_refresh(provider_id)
+
+
+@shared_task
+def refresh_if_due():
+    """Beat calls this every minute; it refreshes when the interval chosen in the admin has passed."""
+    current = RefreshSettings.load()
+    now = timezone.now()
+    # 30 s of margin so a tick that arrives a little early does not wait a whole extra minute.
+    if current.last_scheduled_at and now - current.last_scheduled_at < timedelta(minutes=current.refresh_minutes, seconds=-30):
+        return False
+    # Claim the run, so two overlapping ticks cannot start it twice.
+    if not RefreshSettings.objects.filter(pk=current.pk, last_scheduled_at=current.last_scheduled_at).update(last_scheduled_at=now):
+        return False
+    refresh_all()
+    return True
 
 
 @shared_task

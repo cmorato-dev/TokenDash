@@ -2,9 +2,8 @@ from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-from django.conf import settings
 
-from dashboard.models import ProviderStatus
+from dashboard.models import ProviderStatus, RefreshSettings
 from .models import ProviderCredential
 
 def check_operator(request):
@@ -17,7 +16,7 @@ def connections(request):
     from .claude_client_views import client_session_state
     return render(request, 'admin/scraper/connections.html', {
         **admin.site.each_context(request), 'title': 'Conectar cuentas de IA',
-        'interval_minutes': settings.SCRAPE_INTERVAL_MINUTES,
+        'interval_minutes': RefreshSettings.load().refresh_minutes,
         'chatgpt': ProviderStatus.objects.get(provider='chatgpt'),
         'codex_credential': ProviderCredential.objects.filter(provider__provider='chatgpt').first(),
         'claude': ProviderStatus.objects.get(provider='claude'),

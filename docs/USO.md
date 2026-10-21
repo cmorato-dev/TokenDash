@@ -58,12 +58,30 @@ Claude se vincula una sola vez desde la consola del equipo donde está TokenDash
 - Sigue los pasos de **Conectar cuentas → 2 · Claude**.
 - La misma guía, con más detalle, está en [Vincular Claude](VINCULAR_CLAUDE.md).
 
+## Cada cuánto se actualiza
+
+TokenDash lee los límites cada 20 minutos. Para cambiarlo:
+
+1. Entra en **Administración → Ajustes**.
+2. Elige la frecuencia, entre cada 15 minutos y cada 6 horas.
+3. Pulsa **Guardar**.
+
+El cambio vale desde el minuto siguiente, sin reiniciar nada. La misma página dice cuándo fue la última lectura automática y cuándo será la próxima.
+
+Elige una frecuencia más baja si te basta con mirar de vez en cuando. No hay opción de menos de 15 minutos, para no consultar las cuentas con demasiada frecuencia.
+
 ## Leer el panel
 
 Cada tarjeta muestra un proveedor:
 
 - **El círculo:** el porcentaje **disponible** del límite principal, el de 5 horas. Debajo aparece lo consumido y cuándo se renueva.
-- **Las frases de abajo:** el resto de límites, como el semanal. Por ejemplo: «Llevas un 26 % del límite esta semana. Se renueva el 27/10 a las 7:41».
+- **Las frases de abajo:** el resto de límites, como el semanal, cada uno con una barra de lo consumido. Por ejemplo: «Llevas un 26 % del límite esta semana. Se renueva el 27/10 a las 7:41».
+- **El color:**
+  - Hasta la mitad del límite, el del proveedor: verde ChatGPT y naranja Claude.
+  - Si pasas del **50 %**, amarillo, y la tarjeta avisa «Has pasado de la mitad del límite».
+  - Si pasas del **80 %**, rojo: «Te queda poco».
+
+  El círculo sigue el límite principal y cada barra el suyo. Un límite que ya se ha renovado sale atenuado y sin color de aviso.
 - **La etiqueta de arriba a la derecha:**
   - **Actualizado:** la última lectura fue bien.
   - **Sesión expirada:** hay que volver a conectar la cuenta.
@@ -73,7 +91,7 @@ Cada tarjeta muestra un proveedor:
 - **«Ya se ha renovado»:** el límite se reinició después de la última lectura. El número es el último conocido, no el actual. En la siguiente lectura se actualiza.
 - **Actualizar ahora:** pide una lectura en ese momento. Hay que esperar un minuto entre pulsaciones.
 
-TokenDash lee los límites cada 20 minutos. El panel abierto se refresca solo.
+TokenDash lee los límites con la frecuencia de **Ajustes**, cada 20 minutos por defecto. El panel abierto se refresca solo.
 
 ### La gráfica
 

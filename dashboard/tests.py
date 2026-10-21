@@ -8,7 +8,7 @@ from django.core.management import call_command
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
-from .models import IntegrationKey, ProviderStatus, UsageLog
+from .models import IntegrationKey, ProviderStatus, RefreshSettings, UsageLog
 from scraper.models import ProviderCredential
 
 @override_settings(STORAGES={'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}})
@@ -265,3 +265,41 @@ class FirstSignInTests(TestCase):
         self.client.post(reverse('login'), {'username': 'admin', 'password': 'Otra-clave-larga-9'})
         self.assertEqual(self.client.get('/').status_code, 200)
         self.assertContains(self.client.get(reverse('password_change')), 'TU CUENTA')
+
+
+class RefreshSettingsTests(TestCase):
+    """The refresh interval is chosen in the admin; beat only ticks every minute."""
+
+    def tick(self, at):
+        from scraper.tasks import refresh_if_due
+        with patch('scraper.tasks.timezone.now', return_value=at), patch('scraper.tasks.refresh_all') as refresh:
+            refresh_if_due()
+        return refresh.called
+
+    def test_interval_from_the_admin_is_respected(self):
+        start = timezone.now()
+        self.assertTrue(self.tick(start))  # the first tick reads at once
+        self.assertFalse(self.tick(start + timedelta(minutes=10)))
+        self.assertTrue(self.tick(start + timedelta(minutes=20)))
+        RefreshSettings.objects.update(refresh_minutes=60)
+        self.assertFalse(self.tick(start + timedelta(minutes=50)))
+        self.assertTrue(self.tick(start + timedelta(minutes=80)))
+
+    @override_settings(SCRAPE_INTERVAL_MINUTES=30)
+    def test_first_value_comes_from_the_env(self):
+        self.assertEqual(RefreshSettings.load().refresh_minutes, 30)
+
+    def test_admin_has_a_single_settings_page(self):
+        admin = get_user_model().objects.create_superuser('jefe', '', 'Otra-clave-larga-9')
+        self.client.force_login(admin)
+        listing = self.client.get(reverse('admin:dashboard_refreshsettings_changelist'))
+        change_url = reverse('admin:dashboard_refreshsettings_change', args=[RefreshSettings.load().pk])
+        self.assertRedirects(listing, change_url)
+        self.assertContains(self.client.get(change_url), 'Cada 2 horas')
+        self.client.post(change_url, {'refresh_minutes': 120})
+        self.assertEqual(RefreshSettings.load().refresh_minutes, 120)
+        self.assertEqual(self.client.post(change_url, {'refresh_minutes': 5}).status_code, 200)  # not offered
+        self.assertEqual(RefreshSettings.load().refresh_minutes, 120)
+        self.assertNotContains(self.client.get(change_url), 'deletelink')
+        self.assertEqual(self.client.get(reverse('admin:dashboard_refreshsettings_add')).status_code, 403)
+        self.assertContains(self.client.get(reverse('scraper_connect')), 'cada 120 minutos')
