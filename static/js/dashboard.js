@@ -26,8 +26,17 @@ const showError = message => { const feedback = $('#feedback'); if (feedback) fe
 async function getJSON(url, options = {}) {
   if (embedded && !embedKey) throw new Error('Falta la clave: añade #clave=… al final de la dirección del módulo.');
   const auth = embedKey ? { Authorization: `Bearer ${embedKey}` } : {};
-  const response = await fetch(url, { ...options, headers: { Accept: 'application/json', ...auth, ...options.headers } });
+  let response;
+  try {
+    response = await fetch(url, { ...options, headers: { Accept: 'application/json', ...auth, ...options.headers } });
+  } catch {
+    throw new Error('No hay conexión con el servidor de TokenDash. Se reintentará en unos segundos.');
+  }
   if (response.redirected) { window.location.href = response.url; throw new Error('Inicia sesión de nuevo.'); }
+  // While the server restarts or stops, the reply is an HTML error page instead of JSON.
+  if (!(response.headers.get('content-type') || '').includes('application/json')) {
+    throw new Error(`El servidor de TokenDash no ha respondido bien (error ${response.status}). Puede que se esté reiniciando; se reintentará en unos segundos.`);
+  }
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'No se pudo completar la solicitud.');
   return data;

@@ -47,12 +47,18 @@ class DashboardTests(TestCase):
         enqueue.assert_called_once_with(self.provider.pk)
         self.user.is_staff = False
         self.user.save()
-        self.assertEqual(self.client.post(url).status_code, 403)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('error', response.json())
 
     def test_refresh_csrf(self):
+        # The dashboard reads errors with fetch(): they must be JSON, not Django's HTML page.
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.user)
-        self.assertEqual(client.post(reverse('provider-refresh', args=['chatgpt'])).status_code, 403)
+        response = client.post(reverse('provider-refresh', args=['chatgpt']))
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('Recárgala', response.json()['error'])
+        self.assertEqual(client.post(reverse('login')).headers['Content-Type'], 'text/html; charset=utf-8')
 
     @patch('dashboard.views.enqueue_refresh', side_effect=ConnectionError('private-broker-host'))
     def test_broker_failure_is_sanitized(self, enqueue):

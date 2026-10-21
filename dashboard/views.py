@@ -8,7 +8,7 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncWeek, TruncYea
 from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.views import View
+from django.views import View, csrf
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 
@@ -124,6 +124,11 @@ class StatusView(LoginOrKeyRequiredMixin, View):
 class RefreshView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.is_staff
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            return JsonResponse({'error': 'Tu usuario no puede pedir actualizaciones.'}, status=403)
+        return super().handle_no_permission()
 
     def post(self, request, provider):
         status = ProviderStatus.objects.filter(provider=provider).first()
@@ -259,3 +264,10 @@ class SensorView(LoginOrKeyRequiredMixin, View):
         response = JsonResponse(result)
         response['Cache-Control'] = 'no-store'
         return response
+
+
+def csrf_failure(request, reason=''):
+    # The dashboard reads the API with fetch(); an HTML page would only show as a JSON error.
+    if request.path.startswith('/api/'):
+        return JsonResponse({'error': 'La página ha caducado. Recárgala e inténtalo de nuevo.'}, status=403)
+    return csrf.csrf_failure(request, reason)

@@ -62,6 +62,7 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = os.getenv('DJANGO_SECURE_COOKIES', '0') == '1'
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+CSRF_FAILURE_VIEW = 'dashboard.views.csrf_failure'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 if os.getenv('DJANGO_TRUST_PROXY_HEADERS', '0') == '1':
     # Only enable when a trusted reverse proxy overwrites this header and clients
