@@ -83,7 +83,13 @@ $env:DJANGO_SECRET_KEY='solo-comprobaciones-locales'
 .venv/bin/python scripts/check_connection_ui.py
 ```
 
-Playwright solo se usa en estas dos comprobaciones. La imagen de producción no lo incluye.
+**Capturas del README.** `docs/img/panel.png` y `docs/img/panel-una-cuenta.png` se generan con datos inventados, en una base de pruebas propia:
+
+```bash
+.venv/bin/python scripts/capturas_demo.py
+```
+
+Playwright solo se usa en estas comprobaciones y en las capturas. La imagen de producción no lo incluye.
 
 No ejecutes las pruebas con el `.env` de una instalación real ni con su `DB_HOST`. Django crea su propia base de pruebas.
 

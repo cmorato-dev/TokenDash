@@ -118,8 +118,13 @@ class RefreshSettings(models.Model):
     ]
     refresh_minutes = models.PositiveSmallIntegerField(
         'frecuencia de actualización', choices=INTERVALS, default=20,
-        help_text='Cada cuánto lee el servidor los límites de ChatGPT y Claude. El cambio se aplica en el siguiente minuto.')
+        help_text='Cada cuánto lee el servidor los límites. El cambio se aplica en el siguiente minuto.')
     last_scheduled_at = models.DateTimeField('última actualización automática', null=True, blank=True, editable=False)
+    # Many people pay for only one subscription: the other card is hidden and never read.
+    ACCOUNTS = [('both', 'ChatGPT y Claude'), ('chatgpt', 'Solo ChatGPT'), ('claude', 'Solo Claude')]
+    accounts = models.CharField(
+        'cuentas que usas', max_length=10, choices=ACCOUNTS, default='both',
+        help_text='Si solo pagas una de las dos suscripciones, el panel muestra solo esa tarjeta y el servidor solo consulta esa cuenta.')
 
     class Meta:
         verbose_name = 'ajustes'
@@ -135,6 +140,12 @@ class RefreshSettings(models.Model):
         if initial not in dict(cls.INTERVALS):
             initial = 20
         return cls.objects.get_or_create(pk=1, defaults={'refresh_minutes': initial})[0]
+
+    @classmethod
+    def shown_providers(cls):
+        """The providers chosen in the settings: ``['chatgpt']``, ``['claude']`` or both."""
+        accounts = cls.load().accounts
+        return ['chatgpt', 'claude'] if accounts == 'both' else [accounts]
 
     @property
     def next_refresh_at(self):

@@ -68,8 +68,9 @@ class IntegrationKeyAdmin(admin.ModelAdmin):
 @admin.register(RefreshSettings)
 class RefreshSettingsAdmin(admin.ModelAdmin):
     """A single page with the settings: no list, no add, no delete."""
-    fields = ('refresh_minutes', 'last_refresh', 'next_refresh')
+    fields = ('accounts', 'refresh_minutes', 'last_refresh', 'next_refresh')
     readonly_fields = ('last_refresh', 'next_refresh')
+    radio_fields = {'accounts': admin.VERTICAL}
 
     @admin.display(description='última actualización automática')
     def last_refresh(self, obj):

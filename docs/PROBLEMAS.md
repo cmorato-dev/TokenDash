@@ -45,6 +45,8 @@ Más casos en [Vincular Claude → Problemas](VINCULAR_CLAUDE.md#problemas).
 | El porcentaje no cambia y la fecha es antigua | La última lectura falló. TokenDash conserva la última buena con su fecha. La tarjeta dice por qué falló |
 | «Ya se ha renovado» | El límite se reinició después de la última lectura. Se actualiza en la siguiente lectura, según la frecuencia de Administración → Ajustes, o al pulsar «Actualizar ahora» |
 | La gráfica está vacía | Aparece tras la primera lectura correcta |
+| Falta la tarjeta de ChatGPT o la de Claude | En Administración → Ajustes → Cuentas que usas está elegida solo la otra |
+| «El servidor de TokenDash no ha respondido bien» o «No hay conexión con el servidor» | TokenDash se estaba reiniciando o está parado. El panel reintenta solo; si no se va, mira `docker compose ps` |
 | Las horas no coinciden con las mías | Cambia `TIME_ZONE` en el `.env` ([ajustes](MANTENIMIENTO.md#cambiar-otros-ajustes)) |
 
 ## Home Assistant
@@ -55,3 +57,4 @@ Más casos en [Vincular Claude → Problemas](VINCULAR_CLAUDE.md#problemas).
 | «Falta la clave» | Falta `#clave=…` al final de la dirección del módulo |
 | «La clave de Home Assistant no es válida o se ha borrado» | La clave se borró o está mal copiada. Crea otra en Administración → Claves de Home Assistant |
 | La tarjeta dice que el servidor «rechazó la conexión» | Home Assistant no llega al equipo. Prueba antes a abrir `http://IP:8000` en el navegador |
+| El módulo o el sensor de una cuenta dice «Not Found» o «Proveedor desconocido» | Esa cuenta está desactivada en Administración → Ajustes → Cuentas que usas |

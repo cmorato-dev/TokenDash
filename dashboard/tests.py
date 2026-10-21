@@ -302,10 +302,58 @@ class RefreshSettingsTests(TestCase):
         change_url = reverse('admin:dashboard_refreshsettings_change', args=[RefreshSettings.load().pk])
         self.assertRedirects(listing, change_url)
         self.assertContains(self.client.get(change_url), 'Cada 2 horas')
-        self.client.post(change_url, {'refresh_minutes': 120})
+        self.client.post(change_url, {'accounts': 'both', 'refresh_minutes': 120})
         self.assertEqual(RefreshSettings.load().refresh_minutes, 120)
-        self.assertEqual(self.client.post(change_url, {'refresh_minutes': 5}).status_code, 200)  # not offered
+        self.assertEqual(self.client.post(change_url, {'accounts': 'both', 'refresh_minutes': 5}).status_code, 200)  # not offered
         self.assertEqual(RefreshSettings.load().refresh_minutes, 120)
         self.assertNotContains(self.client.get(change_url), 'deletelink')
         self.assertEqual(self.client.get(reverse('admin:dashboard_refreshsettings_add')).status_code, 403)
         self.assertContains(self.client.get(reverse('scraper_connect')), 'cada 120 minutos')
+
+
+class SingleAccountTests(TestCase):
+    """Someone who pays for one subscription sees, and reads, only that account."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser('jefe', '', 'Otra-clave-larga-9')
+        self.client.force_login(self.user)
+        ProviderStatus.objects.update(collection_mode='client')
+        for status in ProviderStatus.objects.all():
+            UsageLog.objects.create(provider=status, quota_key='session', quota_label='5 horas',
+                                    used_percent=30, observed_at=timezone.now())
+
+    def choose(self, accounts):
+        change_url = reverse('admin:dashboard_refreshsettings_change', args=[RefreshSettings.load().pk])
+        self.client.post(change_url, {'accounts': accounts, 'refresh_minutes': 20})
+        self.assertEqual(RefreshSettings.load().accounts, accounts)
+
+    def test_both_accounts_by_default(self):
+        page = self.client.get('/')
+        self.assertContains(page, 'data-provider="chatgpt"')
+        self.assertContains(page, 'data-provider="claude"')
+        self.assertNotContains(page, 'provider-card wide')
+
+    @patch('scraper.tasks.enqueue_refresh')
+    def test_only_claude(self, enqueue):
+        self.choose('claude')
+        page = self.client.get('/')
+        self.assertNotContains(page, 'data-provider="chatgpt"')
+        self.assertContains(page, 'provider-card wide')
+        self.assertContains(page, 'tu cuenta de Claude')
+        self.assertEqual([p['provider'] for p in self.client.get(reverse('provider-status')).json()['providers']], ['claude'])
+        self.assertEqual({s['provider'] for s in self.client.get(reverse('usage-history')).json()['series']}, {'claude'})
+        self.assertEqual(self.client.post(reverse('provider-refresh', args=['chatgpt'])).status_code, 404)
+        self.assertEqual(self.client.get(reverse('ha-sensor', args=['chatgpt'])).status_code, 404)
+        connect = self.client.get(reverse('scraper_connect'))
+        self.assertNotContains(connect, 'id="codex-card"')
+        self.assertContains(connect, 'Solo usas Claude')
+        from scraper.tasks import refresh_all
+        refresh_all()
+        enqueue.assert_called_once_with(ProviderStatus.objects.get(provider='claude').pk)
+
+    def test_only_chatgpt(self):
+        self.choose('chatgpt')
+        page = self.client.get('/')
+        self.assertContains(page, 'data-provider="chatgpt"')
+        self.assertNotContains(page, 'data-provider="claude"')
+        self.assertNotContains(self.client.get(reverse('scraper_connect')), 'id="claude-card"')

@@ -58,6 +58,16 @@ Claude se vincula una sola vez desde la consola del equipo donde está TokenDash
 - Sigue los pasos de **Conectar cuentas → 2 · Claude**.
 - La misma guía, con más detalle, está en [Vincular Claude](VINCULAR_CLAUDE.md).
 
+## Si solo usas ChatGPT o solo Claude
+
+Por defecto el panel muestra las dos cuentas. Si solo pagas una suscripción:
+
+1. Entra en **Administración → Ajustes**.
+2. En **Cuentas que usas**, elige **Solo ChatGPT** o **Solo Claude**.
+3. Pulsa **Guardar**.
+
+El panel muestra entonces una sola tarjeta a todo lo ancho, con el límite de 5 horas a la izquierda y el semanal a la derecha. La gráfica y «Conectar cuentas» solo enseñan esa cuenta, y el servidor deja de consultar la otra. Si más adelante contratas la otra suscripción, vuelve a **ChatGPT y Claude**. El histórico de la cuenta oculta no se borra.
+
 ## Cada cuánto se actualiza
 
 TokenDash lee los límites cada 20 minutos. Para cambiarlo:

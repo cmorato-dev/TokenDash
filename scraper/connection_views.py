@@ -17,6 +17,7 @@ def connections(request):
     return render(request, 'admin/scraper/connections.html', {
         **admin.site.each_context(request), 'title': 'Conectar cuentas de IA',
         'interval_minutes': RefreshSettings.load().refresh_minutes,
+        'shown': RefreshSettings.shown_providers(),
         'chatgpt': ProviderStatus.objects.get(provider='chatgpt'),
         'codex_credential': ProviderCredential.objects.filter(provider__provider='chatgpt').first(),
         'claude': ProviderStatus.objects.get(provider='claude'),

@@ -77,10 +77,12 @@ def enqueue_refresh(provider_id):
 
 @shared_task
 def refresh_all():
-    for provider_id in ProviderCredential.objects.filter(provider__collection_mode='api').values_list('provider_id', flat=True):
+    # Only the accounts chosen in the settings: a hidden account is never read.
+    shown = RefreshSettings.shown_providers()
+    for provider_id in ProviderCredential.objects.filter(provider__collection_mode='api', provider__provider__in=shown).values_list('provider_id', flat=True):
         enqueue_refresh(provider_id)
     # The official Claude Code client can read the subscription limits on the server itself.
-    for provider_id in ProviderStatus.objects.filter(collection_mode='client').values_list('pk', flat=True):
+    for provider_id in ProviderStatus.objects.filter(collection_mode='client', provider__in=shown).values_list('pk', flat=True):
         enqueue_refresh(provider_id)
 
 

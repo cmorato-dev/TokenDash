@@ -10,7 +10,7 @@
   }
 
   const card = $('#codex-card'), say = text => { $('#codex-status').textContent = text; };
-  $('#codex-start').addEventListener('click', async () => {
+  $('#codex-start')?.addEventListener('click', async () => {
     // Open the tab synchronously so the browser does not block it as a pop-up.
     const tab = window.open('about:blank', '_blank');
     try {
@@ -22,7 +22,7 @@
       say(result.message);
     } catch (error) { if (tab) tab.close(); say(error.message); }
   });
-  $('#codex-complete').addEventListener('click', async () => {
+  $('#codex-complete')?.addEventListener('click', async () => {
     const button = $('#codex-complete');
     button.disabled = true;
     try {

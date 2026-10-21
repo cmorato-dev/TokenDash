@@ -35,6 +35,19 @@
   .quota-bar[data-level="warning"] > span { background: #facc15; }
   .quota-bar[data-level="critical"] > span { background: #f87171; }
   .quota-bar.stale > span { opacity: .35; }
+  /* A single subscription: one wide card, the main limit on the left and the rest on the right. */
+  @media (min-width: 768px) {
+    .provider-card.wide { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 56px; align-items: center; }
+    .provider-card.wide > * { grid-column: 1 / -1; }
+    .provider-card.wide > :first-child { grid-row: 1; }
+    .provider-card.wide > .gauge-row { grid-column: 1; grid-row: 2; }
+    .provider-card.wide > .extra-quotas { grid-column: 2; grid-row: 2; align-self: stretch; align-content: center; margin: 32px 0; padding-left: 56px; border-left: 1px solid #1e293b; font-size: 15px; }
+    .provider-card.wide > .extra-quotas:empty { border-left: 0; }
+    .provider-card.wide .quota-bar { height: 8px; margin-top: 10px; }
+    .provider-card.wide > p:empty { display: none; }
+    .provider-card.wide .gauge { width: 168px; height: 168px; padding: 12px; }
+    .provider-card.wide .gauge strong { font-size: 34px; }
+  }
   .gauge > div { height: 100%; border-radius: 50%; background: #111b2c; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   .gauge strong { font-size: 27px; letter-spacing: -.05em; }
   .gauge span { font-size: 10px; color: #94a3b8; margin-top: 3px; }

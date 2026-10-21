@@ -34,7 +34,7 @@ Servidor Docker (Linux o Windows)
 ## Modelos
 
 - `ProviderStatus` y `UsageLog`: cuotas actuales e histórico por ventana. No sumar ventanas incompatibles. `collection_mode` vale `none` (sin conectar), `api` (ChatGPT con credencial) o `client` (Claude con el cliente oficial). `client_auth_method` y `client_auth_checked_at` guardan el **tipo** de credencial del cliente oficial (nunca la credencial), publicado por el `worker` para que el panel pueda mostrarlo.
-- `RefreshSettings`: una sola fila con la frecuencia de actualización (15 min a 6 h) y la hora de la última lectura automática. Se edita en Administración → Ajustes.
+- `RefreshSettings`: una sola fila con la frecuencia de actualización (15 min a 6 h), la hora de la última lectura automática y las cuentas que se usan (`accounts`: las dos, solo ChatGPT o solo Claude). Se edita en Administración → Ajustes. `RefreshSettings.shown_providers()` filtra el panel, la API, los módulos de Home Assistant, «Conectar cuentas» y `refresh_all`.
 - `IntegrationKey`: claves de Home Assistant, de solo lectura. Solo se guarda su SHA-256; la clave se muestra una vez al crearla en el administrador.
 - `ProviderCredential`: tokens de ChatGPT/Codex cifrados con Fernet y una clave derivada de `DJANGO_SECRET_KEY`. Debe conservarse ese secreto al migrar.
 

@@ -4,9 +4,11 @@
 {% block content %}
 <form hidden>{% csrf_token %}</form>
 
+{% if shown|length == 1 %}<p class="connect-message">Solo usas {% if 'chatgpt' in shown %}ChatGPT{% else %}Claude{% endif %}. Si también pagas la otra suscripción, actívala en <a href="{% url 'admin:dashboard_refreshsettings_changelist' %}">Ajustes</a>.</p>{% endif %}
+{% if 'chatgpt' in shown %}
 <section class="connect-card" id="codex-card" data-url="{% url 'scraper_codex_login' %}">
   <p class="eyebrow">LÍMITES DE CODEX</p>
-  <h2>1 · ChatGPT: límites de Codex (5 horas y semana)</h2>
+  <h2>{% if shown|length > 1 %}1 · {% endif %}ChatGPT: límites de Codex (5 horas y semana)</h2>
   {% if codex_credential %}
     <p class="connect-state"><span class="connected">Cuenta conectada{% if codex_credential.plan_type %} · plan {{ codex_credential.plan_type }}{% endif %}</span> · desde {{ codex_credential.connected_at }}</p>
     <p>{{ chatgpt.get_state_display }}{% if chatgpt.last_success_at %} · última lectura: {{ chatgpt.last_success_at }}{% endif %}</p>
@@ -28,10 +30,12 @@
   <p id="codex-status" class="connect-message" role="status" aria-live="polite"></p>
   <p class="browser-hint">TokenDash guarda el token de acceso cifrado en su base de datos y lo renueva solo; nunca guarda tu contraseña. Usa los mismos endpoints que el cliente Codex de código abierto: no son una API documentada y OpenAI podría cambiarlos. Si falla, se conservan los últimos datos. ChatGPT no publica porcentajes para los chats normales; los únicos son los de Codex.</p>
 </section>
+{% endif %}
 
+{% if 'claude' in shown %}
 <section class="connect-card" id="claude-card">
   <p class="eyebrow">CUOTA DE CLAUDE</p>
-  <h2>2 · Claude: % de cuota (5 horas y semana)</h2>
+  <h2>{% if shown|length > 1 %}2 · {% endif %}Claude: % de cuota (5 horas y semana)</h2>
   {% if claude.last_success_at %}<p>{{ claude.get_state_display }} · último dato: {{ claude.last_success_at }}</p>{% endif %}
   {% if claude.last_error %}<p>{{ claude.last_error }}</p>{% endif %}
 
@@ -78,6 +82,7 @@
     <p id="claude-client-status" class="connect-message" role="status" aria-live="polite"></p>
   {% endif %}
 </section>
+{% endif %}
 
 <p><a href="{% url 'dashboard' %}">Volver al dashboard →</a></p>
 {% endblock %}

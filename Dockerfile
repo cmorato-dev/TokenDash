@@ -43,4 +43,6 @@ COPY --from=claude-client --chown=app:app /opt/claude/bin/claude /opt/claude/bin
 RUN DJANGO_SECRET_KEY=build-only-placeholder python manage.py collectstatic --noinput
 USER app
 EXPOSE 8000
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-"]
+# Threaded workers: browsers open spare connections in advance, and a plain sync worker
+# that waits on one is killed after 30 s and answers the next request with an HTML error.
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gthread", "--threads", "4", "--access-logfile", "-"]

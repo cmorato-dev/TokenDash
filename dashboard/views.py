@@ -12,7 +12,7 @@ from django.views import View, csrf
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 
-from .models import IntegrationKey, ProviderStatus, UsageLog
+from .models import IntegrationKey, ProviderStatus, RefreshSettings, UsageLog
 from scraper.tasks import enqueue_refresh
 
 def provider_hint(status):
@@ -87,7 +87,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['providers'] = ProviderStatus.objects.all()
+        context['providers'] = list(ProviderStatus.objects.filter(provider__in=RefreshSettings.shown_providers()))
+        context['single'] = len(context['providers']) == 1
         return context
 
 def integration_key(request):
@@ -117,7 +118,8 @@ class LoginOrKeyRequiredMixin:
 
 class StatusView(LoginOrKeyRequiredMixin, View):
     def get(self, request):
-        response = JsonResponse({'providers': [serialize_status(s) for s in ProviderStatus.objects.select_related('credential')]})
+        shown = ProviderStatus.objects.select_related('credential').filter(provider__in=RefreshSettings.shown_providers())
+        response = JsonResponse({'providers': [serialize_status(s) for s in shown]})
         response['Cache-Control'] = 'no-store'
         return response
 
@@ -131,7 +133,7 @@ class RefreshView(LoginRequiredMixin, UserPassesTestMixin, View):
         return super().handle_no_permission()
 
     def post(self, request, provider):
-        status = ProviderStatus.objects.filter(provider=provider).first()
+        status = ProviderStatus.objects.filter(provider=provider, provider__in=RefreshSettings.shown_providers()).first()
         if status is None:
             return JsonResponse({'error': 'Proveedor desconocido.'}, status=404)
         if status.collection_mode == 'api' and not hasattr(status, 'credential'):
@@ -190,7 +192,7 @@ class HistoryView(LoginOrKeyRequiredMixin, View):
         start = today - timedelta(days=days - 1)
         # A datetime bound keeps the query on the observed_at index.
         start_at = timezone.make_aware(datetime.combine(start, time.min))
-        rows = UsageLog.objects.filter(observed_at__gte=start_at).annotate(
+        rows = UsageLog.objects.filter(observed_at__gte=start_at, provider__provider__in=RefreshSettings.shown_providers()).annotate(
             bucket=TRUNCATIONS[granularity]('observed_at')).values(
             'provider__provider', 'quota_key', 'bucket',
         ).annotate(used=Avg('used_percent')).order_by('bucket')
@@ -231,7 +233,7 @@ class EmbedView(TemplateView):
             raise Http404
         context['module'] = module
         if module != 'grafica':
-            context['provider'] = ProviderStatus.objects.filter(provider=module).first()
+            context['provider'] = ProviderStatus.objects.filter(provider=module, provider__in=RefreshSettings.shown_providers()).first()
             if context['provider'] is None:
                 raise Http404
         return context
@@ -246,7 +248,8 @@ class SensorView(LoginOrKeyRequiredMixin, View):
     """One provider's limits as flat values, for Home Assistant REST sensors."""
 
     def get(self, request, provider):
-        status = ProviderStatus.objects.select_related('credential').filter(provider=provider).first()
+        status = ProviderStatus.objects.select_related('credential').filter(
+            provider=provider, provider__in=RefreshSettings.shown_providers()).first()
         if status is None:
             return JsonResponse({'error': 'Proveedor desconocido.'}, status=404)
         data = serialize_status(status)

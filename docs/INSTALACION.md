@@ -50,7 +50,7 @@ En otras distribuciones, sigue la [guía oficial de Docker](https://docs.docker.
 Si no tienes Git, instálalo con `sudo apt install -y git`.
 
 ```bash
-git clone https://github.com/autohome365-create/TokenDash.git ~/tokendash
+git clone https://github.com/cmorato-dev/TokenDash.git ~/tokendash
 ```
 
 ```bash
@@ -107,13 +107,13 @@ Abre **http://192.168.1.50:8000** en el navegador de cualquier equipo o móvil d
 
 **Sin Git (lo más fácil):**
 
-1. En [la página del proyecto](https://github.com/autohome365-create/TokenDash), pulsa **Code → Download ZIP**.
+1. En [la página del proyecto](https://github.com/cmorato-dev/TokenDash), pulsa **Code → Download ZIP**.
 2. Descomprímelo donde quieras, por ejemplo en `Documentos\tokendash`.
 
 **Con Git**, que facilita actualizar más adelante:
 
 ```powershell
-git clone https://github.com/autohome365-create/TokenDash.git $HOME\tokendash
+git clone https://github.com/cmorato-dev/TokenDash.git $HOME\tokendash
 ```
 
 ### 3. Abrir PowerShell en la carpeta
