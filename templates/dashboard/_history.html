@@ -1,0 +1,10 @@
+{# «Evolución de los límites»: the dashboard and the Home Assistant module share it. #}
+<section class="panel{% if not embed %} mt-6{% endif %}">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div><h2 class="text-xl font-semibold">Evolución de los límites</h2><p class="mt-1 text-sm text-slate-400">Media del porcentaje observado por cuota. Los reinicios pueden reducir el valor.</p></div>
+    <label class="text-sm text-slate-400">Periodo <select id="history-days" class="field ml-2"><option value="7">7 días</option><option value="30">30 días</option><option value="90">3 meses</option><option value="182">6 meses</option><option value="365">1 año</option><option value="1825">5 años</option></select></label>
+  </div>
+  <div id="history" class="history" aria-label="Histórico de consumo"></div>
+  <div id="history-legend" class="mt-4 flex flex-wrap gap-5 text-sm text-slate-400"></div>
+  <p id="history-note" class="mt-3 text-xs leading-6 text-slate-500"></p>
+</section>

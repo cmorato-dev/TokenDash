@@ -1,0 +1,32 @@
+{% load static tz %}
+{% get_current_timezone as dashboard_timezone %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TokenDash · Consumo de IA</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-timezone="{{ dashboard_timezone }}">
+  <div class="mx-auto max-w-6xl px-6 py-8 lg:py-12">
+    <header class="mb-12 flex flex-wrap items-center justify-between gap-5">
+      <a class="brand" href="/">◈ <span>TokenDash</span></a>
+      {% if user.is_authenticated %}
+      <div class="flex items-center gap-5 text-sm text-slate-400">
+        <span>{{ user.username }}</span>
+        {% if not request.session.must_change_password %}
+        <a href="{% url 'password_change' %}">Contraseña</a>
+        {% if user.is_staff %}<a href="/admin/">Administración</a>{% endif %}
+        {% if user.is_superuser %}<a href="{% url 'scraper_connect' %}">Conectar cuentas</a>{% endif %}
+        {% endif %}
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="hover:text-white">Salir</button></form>
+      </div>
+      {% endif %}
+    </header>
+    {% block content %}{% endblock %}
+    <footer class="mt-10 text-xs text-slate-500">Datos de las cuotas visibles en tus cuentas · Zona horaria: {% now 'T' %}</footer>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,92 @@
+x-app: &app
+  build: .
+  # Built from this folder with "docker compose up -d --build".
+  image: tokendash:claude-client
+  env_file: .env
+  environment:
+    DB_HOST: db
+    CELERY_BROKER_URL: redis://redis:6379/0
+  restart: unless-stopped
+  init: true
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tokendash}
+      POSTGRES_USER: ${POSTGRES_USER:-tokendash}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+  migrate:
+    <<: *app
+    # Applies the migrations and, on a new installation only, creates the user admin / tokendash.
+    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py crear_admin_inicial"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    <<: *app
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/accounts/login/')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--loglevel=info", "--concurrency=2"]
+    # The official Claude Code client reads the subscription limits from the worker.
+    # It authenticates with the session stored in the private claude_config volume
+    # (claude auth login), never with a token from the .env: a setup-token is scoped
+    # to model requests and cannot reach the usage endpoint.
+    environment:
+      DB_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CLAUDE_CLIENT_PATH: /opt/claude/bin/claude
+      CLAUDE_CONFIG_DIR: /home/app/.claude
+    volumes:
+      - claude_config:/home/app/.claude
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+  beat:
+    <<: *app
+    command: ["celery", "-A", "config", "beat", "--loglevel=info", "--pidfile=", "--schedule=/tmp/celerybeat-schedule"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  # Credentials and settings of the official Claude Code client. Private to the worker.
+  claude_config:

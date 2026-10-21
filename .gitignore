@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+staticfiles/
+node_modules/
+.coverage
+backups/
+*.dump
+artifacts/
+# Notas privadas de esta instalación: no se publican en GitHub.
+AGENTS.md
+ESTADO_PROYECTO.md
+notas/
+*.dump

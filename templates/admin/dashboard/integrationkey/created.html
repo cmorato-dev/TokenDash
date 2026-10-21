@@ -1,0 +1,25 @@
+{% extends 'admin/base_site.html' %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Administración</a> › <a href="{% url 'admin:dashboard_integrationkey_changelist' %}">Claves de Home Assistant</a> › {{ record.name }}</div>{% endblock %}
+{% block content %}
+<section class="connect-card">
+  <p class="eyebrow">HOME ASSISTANT</p>
+  <h2>Clave «{{ record.name }}» creada</h2>
+  <p><strong>Cópiala ahora: no se volverá a mostrar.</strong> Si la pierdes, borra esta clave y crea otra. La clave solo permite leer los límites; no puede actualizar, conectar ni cambiar nada.</p>
+  <p><input class="ha-copy" type="text" readonly value="{{ key }}" onclick="this.select()" spellcheck="false"></p>
+
+  <h3>Módulos para una tarjeta «Página web»</h3>
+  <p>Cada módulo es independiente: añade en Home Assistant solo los que quieras, cada uno en su propia tarjeta. La clave va detrás de <code>#</code>, así que el navegador no la envía al servidor ni queda en sus registros.</p>
+  {% for module, url in modules %}
+  <p><label>{% if module == 'chatgpt' %}ChatGPT{% elif module == 'claude' %}Claude{% else %}Evolución de los límites{% endif %}<br><input class="ha-copy" type="text" readonly value="{{ url }}" onclick="this.select()" spellcheck="false"></label></p>
+  {% endfor %}
+  <p class="browser-hint">La gráfica abre en 7 días; para otro periodo añade <code>?dias=30</code> antes del <code>#</code> (valen 7, 30, 90, 182, 365 y 1825).</p>
+
+  <h3>Sensores (opcional)</h3>
+  <p>Para tener los porcentajes como entidades de Home Assistant (automatizaciones, historial, tarjetas propias), cada proveedor tiene su dirección. Se pide con la cabecera <code>Authorization: Bearer</code> y la clave; los ejemplos de configuración están en <code>docs/HOME_ASSISTANT.md</code>.</p>
+  {% for provider, url in sensors %}
+  <p><label>{% if provider == 'chatgpt' %}ChatGPT{% else %}Claude{% endif %}<br><input class="ha-copy" type="text" readonly value="{{ url }}" onclick="this.select()" spellcheck="false"></label></p>
+  {% endfor %}
+
+  <p><a class="button" href="{% url 'admin:dashboard_integrationkey_changelist' %}">Hecho</a></p>
+</section>
+{% endblock %}

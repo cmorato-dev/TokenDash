@@ -1,0 +1,410 @@
+/* Tema del administrador de Django: los mismos colores que el dashboard.
+
+   El dashboard tiene un solo tema (oscuro), así que aquí se fuerza ese mismo
+   tema en todas las páginas del administrador: cabecera, migas de pan, tablas,
+   formularios y botones usan la paleta del panel.
+
+   Los selectores repiten `html[data-theme=...]` a propósito: las reglas de
+   Django en `dark_mode.css` tienen más especificidad que `:root` y llegarían
+   después, así que hay que empatar con ellas para ganar. */
+
+:root,
+html[data-theme="light"],
+html[data-theme="dark"],
+html[data-theme="auto"] {
+  color-scheme: dark;
+
+  /* Marca */
+  --primary: #34d399;
+  --primary-fg: #0b1220;
+  --secondary: #111b2c;
+  --accent: #34d399;
+
+  /* Texto */
+  --body-fg: #e2e8f0;
+  --body-bg: #020617;
+  --body-quiet-color: #94a3b8;
+  --body-medium-color: #b4c1d4;
+  --body-loud-color: #f1f5f9;
+
+  /* Cabecera y migas de pan */
+  --header-color: #e2e8f0;
+  --header-branding-color: #34d399;
+  --header-bg: #111b2c;
+  --header-link-color: #a7f3d0;
+  --breadcrumbs-fg: #94a3b8;
+  --breadcrumbs-link-fg: #34d399;
+  --breadcrumbs-bg: #0c1423;
+
+  /* Enlaces */
+  --link-fg: #34d399;
+  --link-hover-color: #6ee7b7;
+  --link-selected-fg: #34d399;
+
+  /* Bordes */
+  --hairline-color: #253044;
+  --border-color: #334155;
+
+  /* Errores y avisos */
+  --error-fg: #fcd34d;
+  --message-success-bg: #14382f;
+  --message-warning-bg: #78350f;
+  --message-error-bg: #450a0a;
+
+  /* Superficies */
+  --darkened-bg: #0c1423;
+  --selected-bg: #1c293b;
+  --selected-row: #17362e;
+
+  /* Botones */
+  --button-fg: #a7f3d0;
+  --button-bg: #17362e;
+  --button-hover-bg: #214c3e;
+  --default-button-bg: #17362e;
+  --default-button-hover-bg: #214c3e;
+  --close-button-bg: #1c293b;
+  --close-button-hover-bg: #253044;
+  --delete-button-bg: #7f1d1d;
+  --delete-button-hover-bg: #991b1b;
+
+  --object-tools-fg: #a7f3d0;
+  --object-tools-bg: #17362e;
+  --object-tools-hover-bg: #214c3e;
+}
+
+/* El panel tiene un solo tema: el conmutador de Django no tiene sentido. */
+.theme-toggle {
+  display: none !important;
+}
+
+/* Cabecera */
+#header {
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+#site-name {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+#site-name a:link,
+#site-name a:visited {
+  color: var(--primary);
+}
+
+#branding h2 {
+  color: var(--body-medium-color);
+}
+
+#user-tools a,
+#logout-form button {
+  border-bottom-color: rgba(52, 211, 153, 0.3);
+}
+
+/* Migas de pan */
+div.breadcrumbs {
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+/* Los módulos son las tarjetas del dashboard */
+.module {
+  border: 1px solid var(--hairline-color);
+  border-radius: 20px;
+  background: #111b2c;
+  overflow: hidden;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: #0c1423;
+  color: var(--body-medium-color);
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+.module caption,
+.inline-group h2 {
+  font-size: 0.7rem;
+}
+
+/* Formularios: los campos del dashboard */
+input:not([type]),
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select,
+.vTextField {
+  background: #0c1423;
+  border-color: var(--border-color);
+  color: var(--body-fg);
+}
+
+input:not([type]):focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus,
+.vTextField:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Botones: el mismo aspecto que las acciones del dashboard */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  border: 1px solid #365246;
+  background: #17362e;
+  color: #a7f3d0;
+  font-weight: 600;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a.button:hover {
+  background: #214c3e;
+  color: #d1fae5;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: #34d399;
+  border-color: #34d399;
+  color: #062a20;
+}
+
+.button.default:hover,
+input[type="submit"].default:hover,
+.submit-row input.default:hover {
+  background: #6ee7b7;
+  color: #062a20;
+}
+
+/* Etiqueta verde del dashboard */
+.eyebrow {
+  color: #34d399;
+  letter-spacing: 0.2em;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.connect-card {
+  padding: 28px;
+  border: 1px solid #253044;
+  border-radius: 20px;
+  background: #111b2c;
+}
+
+.connect-card h2 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+
+.connect-card h3 {
+  font-size: 15px;
+  margin: 18px 0 6px;
+  color: #b4c1d4;
+}
+
+.connect-card p {
+  line-height: 1.6;
+}
+
+.connect-card button,
+.browser-tools button,
+.entry button {
+  padding: 10px 14px;
+  margin: 4px 8px 4px 0;
+  border: 1px solid #365246;
+  border-radius: 9px;
+  background: #17362e;
+  color: #a7f3d0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.connect-card button:hover,
+.browser-tools button:hover,
+.entry button:hover {
+  background: #214c3e;
+  color: #d1fae5;
+}
+
+.connect-card button:disabled,
+button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.connect-state {
+  font-weight: 600;
+}
+
+.connected {
+  color: #34d399;
+}
+
+.browser-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin: 15px 0;
+}
+
+.entry label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entry input {
+  width: 230px;
+  padding: 10px;
+}
+
+.connect-message {
+  padding: 12px 0;
+  line-height: 1.6;
+  min-height: 24px;
+}
+
+.browser-hint {
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 900px;
+  color: #94a3b8;
+}
+
+details.connect-card > summary {
+  cursor: pointer;
+  font-size: 15px;
+}
+
+details.connect-card > summary strong {
+  color: #34d399;
+}
+
+/* Comando de consola: se copia pegándolo, así que se lee de un vistazo */
+code,
+pre {
+  color: #a7f3d0;
+}
+
+code.command {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #0c1423;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  user-select: all;
+  font-family: var(--font-family-monospace);
+}
+
+/* Tarjeta de bienvenida del índice del administrador */
+#welcome-card {
+  padding: 28px;
+  border: 1px solid #253044;
+  border-radius: 20px;
+  background: #111b2c;
+  margin-bottom: 25px;
+}
+
+#welcome-card h2 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+
+#welcome-card p {
+  line-height: 1.6;
+}
+
+#welcome-card .button {
+  display: inline-block;
+  padding: 10px 14px;
+  margin-top: 6px;
+  border: 1px solid #365246;
+  border-radius: 9px;
+  background: #17362e;
+  color: #a7f3d0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#welcome-card .button:hover {
+  background: #214c3e;
+  color: #d1fae5;
+}
+
+/* Guía para vincular Claude: un paso por línea, cada comando con su botón Copiar */
+details.claude-guide {
+  margin: 16px 0;
+  padding: 14px 18px;
+  border: 1px solid #253044;
+  border-radius: 12px;
+  background: #0c1423;
+}
+
+details.claude-guide > summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+details.claude-guide > summary strong {
+  color: #34d399;
+}
+
+.guide-steps {
+  margin: 12px 0;
+  padding-left: 22px;
+  max-width: 900px;
+}
+
+.guide-steps > li {
+  margin: 0 0 14px;
+  line-height: 1.6;
+}
+
+.command-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 6px 0;
+}
+
+.command-row code.command {
+  overflow-wrap: anywhere;
+}
+
+/* display:flex de .entry anula el atributo hidden: el campo de ChatGPT solo aparece tras «Iniciar sesión» */
+.entry[hidden] {
+  display: none;
+}
+
+/* Claves de Home Assistant: direcciones listas para copiar */
+.ha-copy {
+  width: 100%;
+  margin-top: 4px;
+  font-family: ui-monospace, monospace;
+}

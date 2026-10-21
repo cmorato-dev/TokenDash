@@ -1,0 +1,3 @@
+-r requirements.txt
+# Only for the local visual checks in scripts/ (check_dashboard.py, check_connection_ui.py).
+playwright>=1.58,<2

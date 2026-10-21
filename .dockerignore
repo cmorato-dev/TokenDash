@@ -1,0 +1,13 @@
+.env
+.venv
+.git
+*.sqlite3
+__pycache__
+staticfiles
+node_modules
+backups
+*.dump
+artifacts
+notas
+AGENTS.md
+ESTADO_PROYECTO.md

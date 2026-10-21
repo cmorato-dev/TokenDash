@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% comment %}
+Administrador con la paleta del dashboard.
+
+Este archivo sustituye al `admin/base_site.html` de Django para que TODAS las
+páginas del administrador (índice, listas, formularios, inicio de sesión) usen
+los mismos colores que el panel. Django resuelve el `extends` al original del
+propio paquete: el mecanismo de `skip` de la plantilla evita la recursión.
+{% endcomment %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin-theme.css' %}">{% endblock %}
