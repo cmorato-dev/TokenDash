@@ -96,6 +96,7 @@ Cada tarjeta muestra un proveedor:
   - Hasta la mitad del límite, el del proveedor: verde ChatGPT y naranja Claude.
   - Si pasas del **50 %**, amarillo, y la tarjeta avisa «Has pasado de la mitad del límite».
   - Si pasas del **80 %**, rojo: «Te queda poco».
+  - Si llegas al **100 %**, rojo: «Sin tokens». Hay que esperar a que se renueve el límite.
 
   El círculo sigue el límite principal y cada barra el suyo. Un límite que ya se ha renovado sale atenuado y sin color de aviso.
 - **La etiqueta de arriba a la derecha:**

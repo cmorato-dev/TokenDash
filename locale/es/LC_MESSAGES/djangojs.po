@@ -83,6 +83,11 @@ msgstr "Has pasado de la mitad del límite."
 msgid "Little left: you are past 80% of the limit."
 msgstr "Te queda poco: has pasado del 80 % del límite."
 
+#: static/js/dashboard.js:29
+#, javascript-format
+msgid "Out of tokens: you have used 100% of the limit. Wait until it renews."
+msgstr "Sin tokens: has gastado el 100 % del límite. Espera a que se renueve."
+
 #: static/js/dashboard.js:37
 msgid "The key is missing: add #key=… at the end of the module address."
 msgstr "Falta la clave: añade #key=… al final de la dirección del módulo."

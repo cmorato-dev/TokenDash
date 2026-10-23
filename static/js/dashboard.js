@@ -25,6 +25,8 @@ function quotaSentence(quota) {
 // already restarted keeps its old value, so it is not coloured.
 const levelOf = (used, reset) => used === null || used === undefined || reset ? 'ok' : used > 80 ? 'critical' : used > 50 ? 'warning' : 'ok';
 const levelNotes = { warning: _('You are past half of the limit.'), critical: _('Little left: you are past 80% of the limit.') };
+// The whole limit used: say so plainly instead of "little left".
+const levelNote = (level, used) => level === 'critical' && used >= 100 ? _('Out of tokens: you have used 100% of the limit. Wait until it renews.') : levelNotes[level] || '';
 let pending = false;
 // Home Assistant modules carry their read-only key in the URL fragment (#key=…),
 // which the browser never sends to the server; the API receives it as a header.
@@ -77,7 +79,7 @@ async function refreshStatus() {
     card.dataset.level = level;
     const note = $('.level-note', card);
     note.dataset.level = level;
-    note.textContent = levelNotes[level] || '';
+    note.textContent = levelNote(level, provider.used_percent);
     const extra = $('.extra-quotas', card);
     extra.replaceChildren();
     provider.quotas.slice(1).forEach(quota => {

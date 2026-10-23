@@ -96,6 +96,7 @@ Each card shows one provider:
   - Up to half of the limit, the provider's colour: green for ChatGPT and orange for Claude.
   - Past **50 %**, yellow, and the card says "You are past half of the limit".
   - Past **80 %**, red: "Little left".
+  - At **100 %**, red: "Out of tokens". Wait until the limit renews.
 
   The circle follows the main limit and each bar its own. A limit that has already renewed is dimmed and has no warning colour.
 - **The label at the top right:**
