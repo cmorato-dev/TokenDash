@@ -115,7 +115,7 @@ TokenDash lee los límites con la frecuencia de **Ajustes**, cada 20 minutos por
 «Evolución de los límites» muestra el porcentaje consumido registrado por cuota. Las vistas de 24 horas, 7 días y 30 días conservan todas las lecturas con su hora real, incluidos los picos y las bajadas dentro de un mismo día.
 
 - **Colores:** cada proveedor y cada límite tienen su color.
-- **Líneas:** las líneas continuas son el límite de 5 horas y las discontinuas el semanal.
+- **Líneas:** todas las cuotas usan líneas continuas con pequeños puntos rellenos. Los colores y la leyenda distinguen los límites de 5 horas y los semanales.
 - **Periodo:** elige el periodo arriba a la derecha, desde 24 horas hasta 5 años.
 - **Eje temporal:** los separadores diarios y las marcas horarias permiten situar los cambios. Elige 24 horas para verlos de cerca.
 - **Agrupación:** 3 y 6 meses muestran medias semanales; 1 año, medias mensuales; 5 años, medias anuales.

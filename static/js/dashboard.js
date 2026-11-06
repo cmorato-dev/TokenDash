@@ -112,8 +112,6 @@ const palette = ['#34d399', '#fb923c', '#60a5fa', '#c084fc', '#facc15', '#f472b6
 // Fixed colour per provider and window, so a series keeps its colour when another one has no data.
 const seriesColors = { 'chatgpt:session': '#34d399', 'chatgpt:weekly': '#60a5fa', 'claude:session': '#fb923c', 'claude:weekly_all': '#c084fc' };
 const quotaNames = { session: _('session / 5 h'), weekly: _('week'), weekly_all: _('week'), weekly_sonnet: _('week · Sonnet'), monthly: _('month') };
-// Five-hour windows are drawn solid; weekly and monthly ones dashed, with hollow points.
-const dashFor = quota => quota === 'session' ? null : '9 6';
 // How each period is grouped and how its axis is labelled.
 const granularityNames = { day: _('Daily average'), week: _('Weekly average'), month: _('Monthly average'), year: _('Yearly average') };
 function axisLabel(label, granularity) {
@@ -194,7 +192,6 @@ async function loadHistory() {
   }
   data.series.forEach((series, idx) => {
     const color = seriesColors[`${series.provider}:${series.quota}`] || palette[idx % palette.length];
-    const dash = dashFor(series.quota);
     let path = '', connected = false, previousAt = null;
     const points = [];
     const readings = detailed ? series.points : series.values.map((used, index) => ({ used, at: data.labels[index] }));
@@ -204,17 +201,18 @@ async function loadHistory() {
       if (detailed && previousAt !== null && Date.parse(at) - previousAt > 86400000) connected = false;
       path += `${connected ? 'L' : 'M'}${x},${y} `; connected = true;
       previousAt = Date.parse(at);
-      const r = detailed ? 2 : 4;
-      const point = svgNode('circle', dash ? { cx: x, cy: y, r, fill: '#111b2c', stroke: color, 'stroke-width': 1.5 } : { cx: x, cy: y, r, fill: color });
+      // Small filled markers keep dense readings from forming thick bands.
+      const r = detailed ? 1 : 3;
+      const point = svgNode('circle', { cx: x, cy: y, r, fill: color });
       point.append(svgNode('title', {}, `${series.provider === 'chatgpt' ? 'ChatGPT' : 'Claude'} · ${quotaNames[series.quota] || series.quota} · ${detailed ? fmt.format(new Date(at)) : bucketName(at, granularity)}: ${percent(value)}`));
       points.push(point);
     });
-    svg.append(svgNode('path', { d: path, stroke: color, 'stroke-width': 2.5, fill: 'none', ...(dash && { 'stroke-dasharray': dash }) }));
+    svg.append(svgNode('path', { d: path, stroke: color, 'stroke-width': 2.5, fill: 'none' }));
     points.forEach(point => svg.append(point));
     const item = document.createElement('span'); item.style.color = color;
     item.className = 'flex items-center gap-2';
     const swatch = svgNode('svg', { width: 26, height: 10, 'aria-hidden': 'true' });
-    swatch.append(svgNode('line', { x1: 1, x2: 25, y1: 5, y2: 5, stroke: color, 'stroke-width': 2.5, ...(dash && { 'stroke-dasharray': '6 4' }) }));
+    swatch.append(svgNode('line', { x1: 1, x2: 25, y1: 5, y2: 5, stroke: color, 'stroke-width': 2.5 }));
     item.append(swatch, `${series.provider === 'chatgpt' ? 'ChatGPT' : 'Claude'} · ${quotaNames[series.quota] || series.quota}`); legend.append(item);
   });
   const every = Math.ceil((data.labels?.length || 0) / Math.max(2, Math.floor((W - 73) / 70)));

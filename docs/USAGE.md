@@ -115,7 +115,7 @@ TokenDash reads the limits as often as set in **Settings**, every 20 minutes by 
 "Limits over time" shows the recorded percentage used by each quota. The 24-hour, 7-day and 30-day views retain every reading at its actual time, including intraday peaks and drops.
 
 - **Colours:** each provider and each limit has its colour.
-- **Lines:** solid lines are the 5-hour limit and dashed lines the weekly one.
+- **Lines:** every quota uses a solid line, with small filled markers. Colours and the legend distinguish the 5-hour and weekly limits.
 - **Period:** choose it at the top right, from 24 hours to 5 years.
 - **Time axis:** day separators and hour marks show when usage changes. Choose 24 hours for a closer look.
 - **Grouping:** 3 and 6 months show weekly averages, 1 year monthly averages, and 5 years yearly averages.
