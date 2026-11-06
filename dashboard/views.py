@@ -37,12 +37,11 @@ def provider_hint(status):
         return _('Connect ChatGPT in "Connect accounts" to read the Codex limits.')
     return ''
 
-# Windows offered in «Limits over time»: days, label and the granularity
-# used to group the readings. Long windows are grouped by week, month or year, so
-# the chart never needs one point per day (five years would be more than 1800).
+# Short periods retain every observation; long periods offer an aggregated overview.
 PERIODS = {
-    7: (gettext_lazy('7 days'), 'day'),
-    30: (gettext_lazy('30 days'), 'day'),
+    1: (gettext_lazy('24 hours'), 'observation'),
+    7: (gettext_lazy('7 days'), 'observation'),
+    30: (gettext_lazy('30 days'), 'observation'),
     90: (gettext_lazy('3 months'), 'week'),
     182: (gettext_lazy('6 months'), 'week'),
     365: (gettext_lazy('1 year'), 'month'),
@@ -195,7 +194,34 @@ class HistoryView(LoginOrKeyRequiredMixin, View):
         start = today - timedelta(days=days - 1)
         # A datetime bound keeps the query on the observed_at index.
         start_at = timezone.make_aware(datetime.combine(start, time.min))
-        rows = UsageLog.objects.filter(observed_at__gte=start_at, provider__provider__in=RefreshSettings.shown_providers()).annotate(
+        now = timezone.now()
+        if granularity == 'observation':
+            if days == 1:
+                start_at = now - timedelta(hours=24)
+            rows = UsageLog.objects.filter(
+                observed_at__gte=start_at, observed_at__lte=now,
+                provider__provider__in=RefreshSettings.shown_providers(),
+            ).order_by('observed_at', 'pk').values(
+                'provider__provider', 'quota_key', 'observed_at', 'used_percent')
+            series = {}
+            for row in rows:
+                key = (row['provider__provider'], row['quota_key'])
+                series.setdefault(key, []).append({
+                    'at': row['observed_at'].isoformat(), 'used': float(row['used_percent']),
+                })
+            # Local midnights remain correct on days with a daylight-saving change.
+            boundaries = [timezone.make_aware(datetime.combine(day, time.min)).isoformat()
+                          for day in bucket_starts(timezone.localdate(start_at), today, 'day')]
+            response = JsonResponse({
+                'granularity': granularity, 'period': str(label),
+                'start_at': start_at.isoformat(), 'end_at': now.isoformat(),
+                'day_boundaries': boundaries,
+                'series': [{'provider': key[0], 'quota': key[1], 'points': points}
+                           for key, points in sorted(series.items())],
+            })
+            response['Cache-Control'] = 'no-store'
+            return response
+        rows = UsageLog.objects.filter(observed_at__gte=start_at, observed_at__lte=now, provider__provider__in=RefreshSettings.shown_providers()).annotate(
             bucket=TRUNCATIONS[granularity]('observed_at')).values(
             'provider__provider', 'quota_key', 'bucket',
         ).annotate(used=Avg('used_percent')).order_by('bucket')

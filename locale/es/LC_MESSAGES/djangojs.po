@@ -179,3 +179,9 @@ msgstr "El histórico aparecerá tras la primera lectura confirmada."
 #: static/js/dashboard.js:149
 msgid "Average usage, from 0 to 100 percent"
 msgstr "Media del consumo, de 0 a 100 por ciento"
+
+msgid "Usage, from 0 to 100 percent"
+msgstr "Consumo, de 0 a 100 por ciento"
+
+msgid "Each point is a recorded reading, with its time. No daily averages or estimated resets. Gaps longer than 24 hours are left blank."
+msgstr "Cada punto es una lectura registrada con su hora. Sin medias diarias ni reinicios estimados. Los huecos de más de 24 horas se dejan en blanco."

@@ -112,15 +112,16 @@ TokenDash lee los límites con la frecuencia de **Ajustes**, cada 20 minutos por
 
 ### La gráfica
 
-«Evolución de los límites» muestra la media del porcentaje consumido en cada periodo.
+«Evolución de los límites» muestra el porcentaje consumido registrado por cuota. Las vistas de 24 horas, 7 días y 30 días conservan todas las lecturas con su hora real, incluidos los picos y las bajadas dentro de un mismo día.
 
 - **Colores:** cada proveedor y cada límite tienen su color.
 - **Líneas:** las líneas continuas son el límite de 5 horas y las discontinuas el semanal.
-- **Periodo:** elige el periodo arriba a la derecha, desde 7 días hasta 5 años.
-- **Agrupación:** con periodos largos agrupa por semanas, meses o años.
-- **Detalle:** pasa el ratón por un punto para ver su valor.
+- **Periodo:** elige el periodo arriba a la derecha, desde 24 horas hasta 5 años.
+- **Eje temporal:** los separadores diarios y las marcas horarias permiten situar los cambios. Elige 24 horas para verlos de cerca.
+- **Agrupación:** 3 y 6 meses muestran medias semanales; 1 año, medias mensuales; 5 años, medias anuales.
+- **Detalle:** pasa el ratón por un punto para ver su valor y fecha; las vistas detalladas también muestran la hora.
 
-Los límites se reinician, así que es normal que la línea suba y baje. Un hueco significa que en ese periodo no hubo lecturas.
+Los límites se reinician, así que es normal que la línea suba y baje. Las vistas detalladas dejan en blanco los huecos de más de 24 horas y terminan en la última lectura. Las líneas unen valores registrados: no se inventan picos, ceros ni horas de reinicio. Los datos aparecen cuando el servidor guarda una lectura con la frecuencia de Ajustes.
 
 ## Home Assistant
 

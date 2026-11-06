@@ -28,6 +28,7 @@ const levelNotes = { warning: _('You are past half of the limit.'), critical: _(
 // The whole limit used: say so plainly instead of "little left".
 const levelNote = (level, used) => level === 'critical' && used >= 100 ? _('Out of tokens: you have used 100% of the limit. Wait until it renews.') : levelNotes[level] || '';
 let pending = false;
+let historyVersion = null;
 // Home Assistant modules carry their read-only key in the URL fragment (#key=…),
 // which the browser never sends to the server; the API receives it as a header.
 // #clave=… is the name used by the first, Spanish-only addresses.
@@ -56,6 +57,9 @@ async function getJSON(url, options = {}) {
 }
 async function refreshStatus() {
   const data = await getJSON('/api/status/');
+  const version = JSON.stringify(data.providers.map(p => [p.provider, p.last_success_at]));
+  const historyChanged = historyVersion !== null && version !== historyVersion;
+  historyVersion = version;
   pending = false;
   data.providers.forEach(provider => {
     const card = $(`[data-provider="${provider.provider}"]`);
@@ -102,6 +106,7 @@ async function refreshStatus() {
     if (button) { button.hidden = !provider.can_refresh; button.disabled = provider.refreshing; }
     pending ||= provider.refreshing;
   });
+  if (historyChanged) await reloadHistory();
 }
 const palette = ['#34d399', '#fb923c', '#60a5fa', '#c084fc', '#facc15', '#f472b6'];
 // Fixed colour per provider and window, so a series keeps its colour when another one has no data.
@@ -135,12 +140,17 @@ function svgNode(tag, attrs, text) {
 }
 async function loadHistory() {
   showError('');
-  const data = await getJSON(`/api/history/?days=${$('#history-days').value}`);
+  const days = $('#history-days').value;
+  const data = await getJSON(`/api/history/?days=${days}`);
+  if ($('#history-days').value !== days) return;
   const root = $('#history'), legend = $('#history-legend');
   root.replaceChildren(); legend.replaceChildren();
   const granularity = data.granularity || 'day';
+  const detailed = granularity === 'observation';
   const note = $('#history-note');
-  if (note) note.textContent = format(_('%(average)s of the percentage observed per quota.'), { average: granularityNames[granularity] || granularityNames.day });
+  if (note) note.textContent = detailed
+    ? _('Each point is a recorded reading, with its time. No daily averages or estimated resets. Gaps longer than 24 hours are left blank.')
+    : format(_('%(average)s of the percentage observed per quota.'), { average: granularityNames[granularity] || granularityNames.day });
   if (!data.series.length) {
     const empty = document.createElement('p');
     empty.className = 'empty'; empty.textContent = _('The history will appear after the first confirmed reading.');
@@ -148,25 +158,55 @@ async function loadHistory() {
   }
   // Use the real width so labels keep their size on phones.
   const W = Math.max(300, root.clientWidth || 1000);
-  const svg = svgNode('svg', { viewBox: `0 0 ${W} 260`, role: 'img', 'aria-label': _('Average usage, from 0 to 100 percent') });
+  const svg = svgNode('svg', { viewBox: `0 0 ${W} 280`, role: 'img', 'aria-label': _('Usage, from 0 to 100 percent') });
   [0, 25, 50, 75, 100].forEach(value => {
     const y = 220 - value * 2;
     svg.append(svgNode('line', { x1: 48, x2: W - 25, y1: y, y2: y, stroke: '#263449', 'stroke-dasharray': '4 6' }));
     svg.append(svgNode('text', { x: 0, y: y + 4, fill: '#8190a6', 'font-size': 12 }, `${value}%`));
   });
-  const xAt = i => 48 + i * (W - 73) / Math.max(1, data.labels.length - 1);
-  const every = Math.ceil(data.labels.length / Math.max(2, Math.floor((W - 73) / 70)));
+  const start = Date.parse(data.start_at), end = Date.parse(data.end_at);
+  const xTime = at => 48 + (Date.parse(at) - start) * (W - 73) / Math.max(1, end - start);
+  const xAt = i => 48 + i * (W - 73) / Math.max(1, (data.labels?.length || 0) - 1);
+  if (detailed) {
+    const hour = 3600000, step = Number(days) === 1 ? 3 : Number(days) === 7 ? 6 : 24;
+    const labelEvery = Math.max(1, Math.ceil(data.day_boundaries.length / Math.max(2, Math.floor((W - 73) / 80))));
+    let lastHourLabel = -Infinity;
+    data.day_boundaries.forEach((boundary, index) => {
+      const midnight = Date.parse(boundary), x = xTime(boundary);
+      if (midnight >= start && midnight <= end) {
+        svg.append(svgNode('line', { class: 'day-boundary', x1: x, x2: x, y1: 20, y2: 225, stroke: '#42526a' }));
+        if (index % labelEvery === 0) svg.append(svgNode('text', { x, y: 266, fill: '#a8b8cf', 'text-anchor': 'middle', 'font-size': 12 }, renewDay.format(new Date(boundary))));
+      }
+      // Absolute hours preserve the two occurrences of an hour when DST ends.
+      for (let at = midnight; at < midnight + 25 * hour && at <= end; at += step * hour) {
+        if (at < start || (index + 1 < data.day_boundaries.length && at >= Date.parse(data.day_boundaries[index + 1]))) continue;
+        const tickX = xTime(new Date(at).toISOString());
+        svg.append(svgNode('line', { class: 'hour-tick', x1: tickX, x2: tickX, y1: 220, y2: 226, stroke: '#8190a6' }));
+        if (step < 24) {
+          svg.append(svgNode('line', { x1: tickX, x2: tickX, y1: 20, y2: 220, stroke: '#263449', 'stroke-dasharray': '2 7' }));
+          if (tickX - lastHourLabel >= 62 && tickX < W - 40) {
+            svg.append(svgNode('text', { x: tickX, y: 244, fill: '#8190a6', 'text-anchor': 'middle', 'font-size': 11 }, renewHour.format(new Date(at))));
+            lastHourLabel = tickX;
+          }
+        }
+      }
+    });
+  }
   data.series.forEach((series, idx) => {
     const color = seriesColors[`${series.provider}:${series.quota}`] || palette[idx % palette.length];
     const dash = dashFor(series.quota);
-    let path = '', connected = false;
+    let path = '', connected = false, previousAt = null;
     const points = [];
-    series.values.forEach((value, index) => {
+    const readings = detailed ? series.points : series.values.map((used, index) => ({ used, at: data.labels[index] }));
+    readings.forEach(({ used: value, at }, index) => {
       if (value === null) { connected = false; return; }
-      const x = xAt(index), y = 220 - value * 2;
+      const x = detailed ? xTime(at) : xAt(index), y = 220 - value * 2;
+      if (detailed && previousAt !== null && Date.parse(at) - previousAt > 86400000) connected = false;
       path += `${connected ? 'L' : 'M'}${x},${y} `; connected = true;
-      const point = svgNode('circle', dash ? { cx: x, cy: y, r: 4, fill: '#111b2c', stroke: color, 'stroke-width': 2 } : { cx: x, cy: y, r: 4, fill: color });
-      point.append(svgNode('title', {}, `${series.provider === 'chatgpt' ? 'ChatGPT' : 'Claude'} · ${quotaNames[series.quota] || series.quota} · ${bucketName(data.labels[index], granularity)}: ${percent(value)}`));
+      previousAt = Date.parse(at);
+      const r = detailed ? 2 : 4;
+      const point = svgNode('circle', dash ? { cx: x, cy: y, r, fill: '#111b2c', stroke: color, 'stroke-width': 1.5 } : { cx: x, cy: y, r, fill: color });
+      point.append(svgNode('title', {}, `${series.provider === 'chatgpt' ? 'ChatGPT' : 'Claude'} · ${quotaNames[series.quota] || series.quota} · ${detailed ? fmt.format(new Date(at)) : bucketName(at, granularity)}: ${percent(value)}`));
       points.push(point);
     });
     svg.append(svgNode('path', { d: path, stroke: color, 'stroke-width': 2.5, fill: 'none', ...(dash && { 'stroke-dasharray': dash }) }));
@@ -177,7 +217,8 @@ async function loadHistory() {
     swatch.append(svgNode('line', { x1: 1, x2: 25, y1: 5, y2: 5, stroke: color, 'stroke-width': 2.5, ...(dash && { 'stroke-dasharray': '6 4' }) }));
     item.append(swatch, `${series.provider === 'chatgpt' ? 'ChatGPT' : 'Claude'} · ${quotaNames[series.quota] || series.quota}`); legend.append(item);
   });
-  data.labels.forEach((label, index) => {
+  const every = Math.ceil((data.labels?.length || 0) / Math.max(2, Math.floor((W - 73) / 70)));
+  (data.labels || []).forEach((label, index) => {
     if (index % every !== 0 && index !== data.labels.length - 1) return;
     svg.append(svgNode('text', { x: xAt(index), y: 250, fill: '#8190a6', 'text-anchor': 'middle', 'font-size': 12 }, axisLabel(label, granularity)));
   });

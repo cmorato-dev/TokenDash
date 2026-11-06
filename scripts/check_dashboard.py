@@ -61,9 +61,16 @@ def seed():
     now = timezone.now()
     for provider in ('chatgpt', 'claude'):
         status = ProviderStatus.objects.get(provider=provider)
-        for days_ago, value in [(0, 20), (0, 40), (2, 55), (20, 30), (60, 45), (200, 70), (400, 25)]:
+        for days_ago, value in [(2, 55), (20, 30), (60, 45), (200, 70), (400, 25)]:
             UsageLog.objects.create(provider=status, quota_key='session', quota_label='5-hour session',
                                     used_percent=value, observed_at=now - timedelta(days=days_ago))
+        # Two 5-hour cycles in one day: daily averaging must never hide these peaks.
+        for minutes, value in [(600, 8), (480, 60), (360, 100), (300, 0), (180, 65), (60, 87)]:
+            UsageLog.objects.create(provider=status, quota_key='session', quota_label='5-hour session',
+                                    used_percent=value, observed_at=now - timedelta(minutes=minutes))
+            UsageLog.objects.create(provider=status, quota_key='weekly' if provider == 'chatgpt' else 'weekly_all',
+                                    quota_label='week', used_percent=90 - minutes / 100,
+                                    observed_at=now - timedelta(minutes=minutes - 1))
     # A weekly window as the providers publish it, to check the sentence under the gauge.
     ProviderStatus.objects.filter(provider='chatgpt').update(state='ok', last_success_at=now, quotas=[
         {'key': 'session', 'label': 'Codex · 5 h window', 'used_percent': '1.00', 'reset_text': '', 'resets_at': '2030-01-01T00:00:00+00:00'},
@@ -78,7 +85,7 @@ def pages(lang):
             'catalog': JavaScriptCatalog.as_view()(factory.get(f'/{lang}/jsi18n/')).content,
             'status': call_view(StatusView, '/api/status/'),
             'history': {days: call_view(HistoryView, f'/api/history/?days={days}')
-                        for days in ('7', '30', '90', '182', '365', '1825')},
+                        for days in ('1', '7', '30', '90', '182', '365', '1825')},
         }
 
 
@@ -122,7 +129,7 @@ try:
                 # The token section was removed on 21/10.
                 assert page.locator('.token-card').count() == 0
                 # Every offered period must render a chart.
-                for days in ('7', '30', '90', '182', '365', '1825'):
+                for days in ('1', '7', '30', '90', '182', '365', '1825'):
                     page.select_option('#history-days', days)
                     page.wait_for_timeout(500)
                     assert page.locator('#history svg').count() >= 1, f'{lang}: no chart for {days} days'
@@ -133,13 +140,33 @@ try:
                 assert not errors, errors
                 output = Path(os.getenv('TOKENDASH_ARTIFACTS', 'artifacts'))
                 output.mkdir(parents=True, exist_ok=True)
-                page.select_option('#history-days', '1825')
+                page.select_option('#history-days', '1')
                 page.wait_for_timeout(500)
+                assert page.locator('#history .hour-tick').count() >= 7
+                titles = page.locator('#history circle title').all_text_contents()
+                assert any('100%' in title for title in titles)
+                assert any('87%' in title for title in titles)
+                paths = page.locator('#history path').evaluate_all('(nodes) => nodes.map(n => n.getAttribute("d"))')
+                assert any(path.count('L') >= 5 for path in paths), paths
+                # Real timestamps preserve both two-hour and one-hour intervals.
+                xs = page.locator('#history circle').evaluate_all('(nodes) => nodes.slice(0, 6).map(n => Number(n.getAttribute("cx")))')
+                assert abs((xs[1] - xs[0]) / (xs[4] - xs[3]) - 1) < 0.001, xs
+                assert abs((xs[2] - xs[1]) / (xs[3] - xs[2]) - 2) < 0.001, xs
+                assert ':' in titles[-1], titles[-1]
+                assert page.locator('#history-legend > span').count() == 4
+                page.screenshot(path=str(output / f'dashboard-24-hours-{lang}.png'), full_page=True)
+                page.select_option('#history-days', '7')
+                page.wait_for_timeout(500)
+                assert page.locator('#history .day-boundary').count() == 7
+                paths = page.locator('#history path').evaluate_all('(nodes) => nodes.map(n => n.getAttribute("d"))')
+                assert any(path.count('M') == 2 for path in paths), paths
                 page.screenshot(path=str(output / f'dashboard-desktop-{lang}.png'), full_page=True)
                 page.select_option('#history-days', '90')
                 page.wait_for_timeout(500)
                 page.screenshot(path=str(output / f'dashboard-3-months-{lang}.png'), full_page=True)
                 page.set_viewport_size({'width': 390, 'height': 844})
+                page.select_option('#history-days', '1')
+                page.wait_for_timeout(500)
                 assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
                 page.screenshot(path=str(output / f'dashboard-mobile-{lang}.png'), full_page=True)
                 page.close()

@@ -64,7 +64,7 @@ ChatGPT/Codex: the superuser signs in once on OpenAI. PKCE/state are validated a
 | `/i18n/setlang/` | Changes the language (**EN · ES** buttons); POST with CSRF |
 | `/<language>/jsi18n/` | Translated texts of the JavaScript |
 | `/<language>/accounts/password_change/` | Password change. A session signed in with the initial password cannot reach any other page (the APIs answer 403) |
-| `/api/status/`, `/api/history/` | Quota state and history; sign-in or Home Assistant key. The history offers 7, 30, 90, 182, 365 and 1825 days, grouped by day, week, month or year |
+| `/api/status/`, `/api/history/` | Quota state and history; sign-in or Home Assistant key. The history offers 1 (rolling 24 hours), 7 and 30 days with timestamped observations (`points`, `start_at`, `end_at`, `day_boundaries`); 90/182, 365 and 1825 days retain weekly, monthly and yearly averages (`labels`, `values`) |
 | `/<language>/ha/chatgpt/`, `…/ha/claude/`, `…/ha/chart/` | A single module for a Home Assistant card. It can be framed (no `X-Frame-Options`) and carries no data: its JavaScript reads the key from the `#key=…` fragment and sends it as `Authorization: Bearer`. The old unprefixed addresses (`/ha/grafica/`, `#clave=`, `?dias=`) keep working |
 | `/api/ha/<provider>/` | A provider's values for REST sensors; Home Assistant key or sign-in |
 | `/api/refresh/<provider>/` | Queues a refresh; POST, CSRF and `is_staff` |

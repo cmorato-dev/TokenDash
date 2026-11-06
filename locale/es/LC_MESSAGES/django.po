@@ -975,3 +975,9 @@ msgstr "Has entrado con la contraseña inicial de TokenDash, que es pública. C�
 #: templates/registration/password_change_form.html:16
 msgid "Save the password"
 msgstr "Guardar la contraseña"
+
+msgid "24 hours"
+msgstr "24 horas"
+
+msgid "Recorded usage per quota. Session and weekly limits are shown separately."
+msgstr "Consumo registrado por cuota. Los límites de sesión y semana se muestran por separado."

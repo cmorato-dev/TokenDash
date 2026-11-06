@@ -63,7 +63,7 @@ ChatGPT/Codex: el superusuario inicia sesión una vez en OpenAI. Se valida PKCE/
 | `/i18n/setlang/` | Cambia de idioma (botones **EN · ES**); POST con CSRF |
 | `/<idioma>/jsi18n/` | Textos traducidos del JavaScript |
 | `/<idioma>/accounts/password_change/` | Cambio de contraseña. Una sesión iniciada con la contraseña inicial no puede ir a ninguna otra página (las API responden 403) |
-| `/api/status/`, `/api/history/` | Estado e histórico de cuotas; login o clave de Home Assistant. El histórico ofrece 7, 30, 90, 182, 365 y 1825 días, agrupados por día, semana, mes o año |
+| `/api/status/`, `/api/history/` | Estado e histórico de cuotas; login o clave de Home Assistant. El histórico ofrece 1 (últimas 24 horas), 7 y 30 días con lecturas con su hora (`points`, `start_at`, `end_at`, `day_boundaries`); 90/182, 365 y 1825 días conservan medias semanales, mensuales y anuales (`labels`, `values`) |
 | `/<idioma>/ha/chatgpt/`, `…/ha/claude/`, `…/ha/chart/` | Un módulo suelto para una tarjeta de Home Assistant. Se puede incrustar (sin `X-Frame-Options`) y no lleva datos: su JavaScript lee la clave del fragmento `#key=…` y la envía como `Authorization: Bearer`. Las direcciones antiguas sin prefijo (`/ha/grafica/`, `#clave=`, `?dias=`) siguen funcionando |
 | `/api/ha/<proveedor>/` | Valores de un proveedor para sensores REST; clave de Home Assistant o login |
 | `/api/refresh/<proveedor>/` | Encola una actualización; POST, CSRF y `is_staff` |

@@ -81,34 +81,64 @@ class DashboardTests(TestCase):
         self.provider.save()
         self.assertEqual(self.client.post(url).status_code, 429)
 
-    def test_history_separates_quotas_and_missing_days(self):
+    def test_history_preserves_intraday_peaks_resets_and_separate_quotas(self):
         self.client.force_login(self.user)
         now = timezone.now()
-        for key, value in [('session', 20), ('session', 40), ('weekly', 80)]:
-            UsageLog.objects.create(provider=self.provider, quota_key=key, quota_label=key, used_percent=value, observed_at=now)
-        UsageLog.objects.create(provider=self.provider, quota_key='old', quota_label='old', used_percent=90, observed_at=now - timedelta(days=45))
-        response = self.client.get(reverse('usage-history'))
-        data = response.json()
-        self.assertEqual(len(data['labels']), 7)
-        series = {row['quota']: row['values'] for row in data['series']}
-        self.assertEqual(series['session'], [None] * 6 + [30.0])
-        self.assertEqual(series['weekly'][-1], 80)
-        self.assertNotIn('old', series)
+        for hours, value in [(6, 8), (5, 100), (4, 0), (1, 87)]:
+            UsageLog.objects.create(provider=self.provider, quota_key='session', quota_label='session',
+                                    used_percent=value, observed_at=now - timedelta(hours=hours))
+        UsageLog.objects.create(provider=self.provider, quota_key='weekly', quota_label='weekly',
+                                used_percent=97, observed_at=now - timedelta(minutes=30))
+        for offset in [-45, 1]:
+            UsageLog.objects.create(provider=self.provider, quota_key='outside', quota_label='outside',
+                                    used_percent=90, observed_at=now + timedelta(days=offset))
+        for days in (1, 7, 30):
+            data = self.client.get(reverse('usage-history') + f'?days={days}').json()
+            series = {row['quota']: row['points'] for row in data['series']}
+            self.assertEqual([p['used'] for p in series['session']], [8, 100, 0, 87])
+            self.assertEqual([p['used'] for p in series['weekly']], [97])
+            self.assertNotIn('outside', series)
+            self.assertEqual(series['session'][0]['at'], (now - timedelta(hours=6)).isoformat())
         self.assertEqual(self.client.get(reverse('usage-history') + '?days=abc').status_code, 400)
 
-    def test_every_offered_period_is_accepted(self):
-        """7 and 30 days, plus 3 months, 6 months, 1 year and 5 years."""
+    @patch('dashboard.views.timezone.now')
+    def test_24_hours_uses_a_rolling_window_and_never_fills_missing_readings(self, clock):
+        from datetime import datetime, timezone as dt_timezone
+        now = datetime(2026, 11, 6, 18, tzinfo=dt_timezone.utc)
+        clock.return_value = now
         self.client.force_login(self.user)
-        for days, granularity in [(7, 'day'), (30, 'day'), (90, 'week'), (182, 'week'),
-                                  (365, 'month'), (1825, 'year')]:
+        for hours, value in [(25, 100), (23, 87)]:
+            UsageLog.objects.create(provider=self.provider, quota_key='session', quota_label='session',
+                                    used_percent=value, observed_at=now - timedelta(hours=hours))
+        data = self.client.get(reverse('usage-history') + '?days=1').json()
+        self.assertEqual(data['start_at'], (now - timedelta(hours=24)).isoformat())
+        self.assertEqual(data['end_at'], now.isoformat())
+        self.assertEqual([p['used'] for p in data['series'][0]['points']], [87])
+
+    @override_settings(TIME_ZONE='Europe/Madrid')
+    @patch('dashboard.views.timezone.now')
+    def test_history_day_boundaries_follow_daylight_saving_time(self, clock):
+        from datetime import datetime, timezone as dt_timezone
+        clock.return_value = datetime(2026, 10, 26, 12, tzinfo=dt_timezone.utc)
+        self.client.force_login(self.user)
+        data = self.client.get(reverse('usage-history')).json()
+        self.assertIn('2026-10-25T00:00:00+02:00', data['day_boundaries'])
+        self.assertIn('2026-10-26T00:00:00+01:00', data['day_boundaries'])
+        self.assertEqual(data['series'], [])
+
+    def test_every_offered_period_is_accepted(self):
+        self.client.force_login(self.user)
+        for days, granularity in [(1, 'observation'), (7, 'observation'), (30, 'observation'),
+                                  (90, 'week'), (182, 'week'), (365, 'month'), (1825, 'year')]:
             response = self.client.get(reverse('usage-history') + f'?days={days}')
             self.assertEqual(response.status_code, 200)
             data = response.json()
             self.assertEqual(data['granularity'], granularity)
-            self.assertTrue(data['labels'])
-            self.assertEqual(data['labels'], sorted(data['labels']))
-            # The last label is the first day of the bucket that holds today.
-            self.assertLessEqual(data['labels'][-1], timezone.localdate().isoformat())
+            if granularity == 'observation':
+                self.assertTrue(data['day_boundaries'])
+            else:
+                self.assertTrue(data['labels'])
+                self.assertEqual(data['labels'], sorted(data['labels']))
 
     def test_a_period_outside_the_offer_is_rejected(self):
         self.client.force_login(self.user)

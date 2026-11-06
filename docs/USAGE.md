@@ -112,15 +112,16 @@ TokenDash reads the limits as often as set in **Settings**, every 20 minutes by 
 
 ### The chart
 
-"Limits over time" shows the average percentage used in each period.
+"Limits over time" shows the recorded percentage used by each quota. The 24-hour, 7-day and 30-day views retain every reading at its actual time, including intraday peaks and drops.
 
 - **Colours:** each provider and each limit has its colour.
 - **Lines:** solid lines are the 5-hour limit and dashed lines the weekly one.
-- **Period:** choose it at the top right, from 7 days to 5 years.
-- **Grouping:** long periods are grouped by week, month or year.
-- **Detail:** hover over a point to see its value.
+- **Period:** choose it at the top right, from 24 hours to 5 years.
+- **Time axis:** day separators and hour marks show when usage changes. Choose 24 hours for a closer look.
+- **Grouping:** 3 and 6 months show weekly averages, 1 year monthly averages, and 5 years yearly averages.
+- **Detail:** hover over a point to see its value and date; detailed views also show the time.
 
-Limits restart, so it is normal for the line to go up and down. A gap means there were no readings in that period.
+Limits restart, so it is normal for the line to go up and down. Detailed views leave gaps longer than 24 hours blank and end at the last reading. Lines connect recorded values; peaks, zeroes and reset times are never invented. Data appears after the server saves a reading at the frequency set in Settings.
 
 ## Home Assistant
 
