@@ -18,6 +18,7 @@ Los comandos se ejecutan en la carpeta de TokenDash. Si algo no aparece aquí, m
 | He olvidado la contraseña | — | Ejecuta `docker compose exec web python manage.py changepassword TU_USUARIO`. Si tampoco recuerdas el usuario: `docker compose exec web python manage.py createsuperuser` |
 | La página sale en inglés | Tu navegador no pide español | Pulsa **ES** arriba a la derecha; TokenDash lo recuerda. También puedes abrir directamente `http://IP:8000/es/` |
 | Los mensajes de la consola salen en inglés | Es el idioma por defecto de la consola | Pon `LANGUAGE_CODE=es` en el `.env` y ejecuta `docker compose up -d` |
+| En una máquina virtual (Proxmox, por ejemplo), la construcción falla en `claude --version` con `Illegal instruction`, o Claude nunca lee | La CPU virtual de la VM oculta instrucciones que necesita Claude Code (SSE4.2) | Dale a la VM la CPU real. En Proxmox: **VM → Hardware → Procesadores → Tipo: `host`** (o `x86-64-v2-AES`). Apaga la VM, enciéndela y ejecuta `docker compose up -d --build` |
 | `admin` / `tokendash` no funciona | Ya hay usuarios: el usuario inicial solo se crea en una instalación vacía | Usa tu usuario. Si no lo recuerdas, mira la fila anterior |
 
 ## ChatGPT
