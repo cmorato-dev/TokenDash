@@ -56,13 +56,15 @@ class IntegrationKeyAdmin(admin.ModelAdmin):
         The key is rendered in this response only: it is not stored in a message,
         a cookie or the session.
         """
+        # A reverse proxy may drop the port from the Host header, so the page swaps this
+        # base for the origin the browser actually used; the server's guess stays as fallback.
         base = request.build_absolute_uri('/').rstrip('/')
-        modules = [(module, f"{base}{reverse('embed', args=[module])}#key={obj._key}") for module in EMBED_MODULES]
-        sensors = [(provider, f"{base}{reverse('ha-sensor', args=[provider])}") for provider in ('chatgpt', 'claude')]
+        modules = [(module, f"{reverse('embed', args=[module])}#key={obj._key}") for module in EMBED_MODULES]
+        sensors = [(provider, reverse('ha-sensor', args=[provider])) for provider in ('chatgpt', 'claude')]
         # The admin already marks this response no-store, so no copy of the key is cached.
         return TemplateResponse(request, 'admin/dashboard/integrationkey/created.html', {
             **self.admin_site.each_context(request), 'opts': self.opts, 'title': _('Key created'),
-            'record': obj, 'key': obj._key, 'modules': modules, 'sensors': sensors,
+            'record': obj, 'key': obj._key, 'base': base, 'modules': modules, 'sensors': sensors,
         })
 
 

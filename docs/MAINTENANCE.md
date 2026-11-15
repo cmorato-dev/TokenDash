@@ -190,6 +190,8 @@ If you already use a reverse proxy (Nginx Proxy Manager, Caddy, Traefik…):
 
 Turn on `DJANGO_TRUST_PROXY_HEADERS=1` only if **all** access goes through the proxy. If the proxy runs on the same computer, leave `WEB_BIND` unset, so port 8000 cannot be reached from the network.
 
+If you write the Nginx configuration yourself, pass the address with its port: `proxy_set_header Host $http_host;` (`$host` drops the port, and TokenDash's own links would then miss it).
+
 ## Uninstall
 
 ```bash

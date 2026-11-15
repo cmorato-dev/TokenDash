@@ -10,17 +10,21 @@
 
   <h3>{% translate "Modules for a “Webpage” card" %}</h3>
   <p>{% blocktranslate %}Each module stands on its own: add to Home Assistant only the ones you want, each on its own card. The key goes after the <code>#</code>, so the browser does not send it to the server and it does not end up in its logs.{% endblocktranslate %}</p>
-  {% for module, url in modules %}
-  <p><label>{% if module == 'chatgpt' %}ChatGPT{% elif module == 'claude' %}Claude{% else %}{% translate "Limits over time" %}{% endif %}<br><input class="ha-copy" type="text" readonly value="{{ url }}" onclick="this.select()" spellcheck="false"></label></p>
+  {% for module, path in modules %}
+  <p><label>{% if module == 'chatgpt' %}ChatGPT{% elif module == 'claude' %}Claude{% else %}{% translate "Limits over time" %}{% endif %}<br><input class="ha-copy" type="text" readonly value="{{ base }}{{ path }}" data-path="{{ path }}" onclick="this.select()" spellcheck="false"></label></p>
   {% endfor %}
   <p class="browser-hint">{% blocktranslate %}The chart opens on 7 days; for another period add <code>?days=30</code> before the <code>#</code> (7, 30, 90, 182, 365 and 1825 are valid).{% endblocktranslate %}</p>
 
   <h3>{% translate "Sensors (optional)" %}</h3>
   <p>{% blocktranslate %}To have the percentages as Home Assistant entities (automations, history, your own cards), each provider has its own address. It is requested with the <code>Authorization: Bearer</code> header and the key; the configuration examples are in <code>docs/HOME_ASSISTANT.md</code>.{% endblocktranslate %}</p>
-  {% for provider, url in sensors %}
-  <p><label>{% if provider == 'chatgpt' %}ChatGPT{% else %}Claude{% endif %}<br><input class="ha-copy" type="text" readonly value="{{ url }}" onclick="this.select()" spellcheck="false"></label></p>
+  {% for provider, path in sensors %}
+  <p><label>{% if provider == 'chatgpt' %}ChatGPT{% else %}Claude{% endif %}<br><input class="ha-copy" type="text" readonly value="{{ base }}{{ path }}" data-path="{{ path }}" onclick="this.select()" spellcheck="false"></label></p>
   {% endfor %}
 
   <p><a class="button" href="{% url 'admin:dashboard_integrationkey_changelist' %}">{% translate "Done" %}</a></p>
 </section>
+<script>
+  // Use the address this page was opened with, port included, even if a proxy hid it from the server.
+  document.querySelectorAll('.ha-copy[data-path]').forEach(input => { input.value = window.location.origin + input.dataset.path; });
+</script>
 {% endblock %}

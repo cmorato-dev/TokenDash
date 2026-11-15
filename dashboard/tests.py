@@ -258,6 +258,8 @@ class HomeAssistantTests(TestCase):
         key = response.context['key']
         self.assertEqual(IntegrationKey.digest(key), created.key_hash)
         self.assertContains(response, f'/en/ha/chart/#key={key}')
+        self.assertContains(response, f'data-path="/en/ha/chart/#key={key}"')
+        self.assertContains(response, 'window.location.origin')
         self.assertIn('no-store', response.headers['Cache-Control'])
         page = self.client.get(reverse('admin:dashboard_integrationkey_change', args=[created.pk]))
         self.assertNotContains(page, key)
