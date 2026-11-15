@@ -16,6 +16,8 @@
     html, body[data-embed] { height: 100%; }
     body[data-embed] { display: flex; flex-direction: column; }
     body[data-embed] > .panel { flex: 1 0 auto; }
+    /* Home Assistant draws its own card border with a 12px radius: match its curve and skip a second border. */
+    body[data-embed] > .panel { border: 0; border-radius: 12px; }
   </style>
   <title>TokenDash · {% if provider %}{{ provider.get_provider_display }}{% else %}{% translate "Limits over time" %}{% endif %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
