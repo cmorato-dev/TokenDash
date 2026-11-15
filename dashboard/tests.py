@@ -200,6 +200,8 @@ class HomeAssistantTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, text)
             self.assertNotIn('X-Frame-Options', response.headers)
+            # No template syntax leaks into the page (a {# #} comment only works on one line).
+            self.assertNotContains(response, '{#')
         # One module per page: the ChatGPT page has neither Claude nor the chart.
         response = self.client.get(reverse('embed', args=['chatgpt']))
         self.assertNotContains(response, 'data-provider="claude"')

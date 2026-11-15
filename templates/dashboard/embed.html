@@ -8,8 +8,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  {# Follow the parent page's light/dark scheme. If the schemes differ (Home Assistant in dark mode),
-     browsers paint an opaque white canvas behind the frame and bg-transparent stops working. #}
+  {% comment %}Follow the parent page's light/dark scheme. If the schemes differ (Home Assistant in dark mode),
+     browsers paint an opaque white canvas behind the frame and bg-transparent stops working.{% endcomment %}
   <meta name="color-scheme" content="light dark">
   <style>
     /* The module fills the whole frame, so no strip shows below it whatever the card height. */
